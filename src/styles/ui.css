@@ -1,0 +1,144 @@
+/* Shared UI look: lettering, key caps, N64 icons, pixel buttons. Colors, font
+   and corner spacing are tokens (tokens/tokens.json → tokens.css); what Figma
+   can't hold, gradients and textures, stays here. See DESIGN.md. */
+
+:root {
+	/* Magic green, lit from the top: filled gauges */
+	--oot-magic: linear-gradient(
+		#b6ffab 0 3px,
+		#33dc4f 3px calc(100% - 4px),
+		#129a2e calc(100% - 4px)
+	);
+
+	/* What overlays put over the scene: darkened toward the edges and blurred */
+	--oot-backdrop: radial-gradient(
+		ellipse at center,
+		rgb(8 10 4 / 0.35),
+		rgb(8 10 4 / 0.82)
+	);
+	--oot-backdrop-filter: blur(4px) saturate(0.85);
+
+	/* Stone grain: dark blotches and pale specks from fractal noise */
+	--stone-shade: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='260' height='260'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.022' numOctaves='4' seed='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .12 0 0 0 0 .13 0 0 0 0 .3 2.6 0 0 0 -1.25'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+	--stone-speck: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.12' numOctaves='2' seed='11' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .9 0 0 0 0 .92 0 0 0 0 1 1.8 0 0 0 -1'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* White lettering with a hard pixel outline and a drop below */
+.oot-text {
+	color: #fff;
+	text-shadow:
+		2px 0 var(--oot-ink),
+		-2px 0 var(--oot-ink),
+		0 2px var(--oot-ink),
+		0 -2px var(--oot-ink),
+		2px 2px var(--oot-ink),
+		-2px 2px var(--oot-ink),
+		2px -2px var(--oot-ink),
+		-2px -2px var(--oot-ink),
+		0 4px var(--oot-ink);
+}
+
+.oot-key {
+	display: inline-grid;
+	place-items: center;
+	min-width: 28px;
+	height: 28px;
+	padding: 0 7px;
+	box-sizing: border-box;
+	border: 2px solid var(--oot-key-edge);
+	border-radius: 6px;
+	background: var(--oot-key);
+	box-shadow: 0 2px 0 rgb(0 0 0 / 0.45);
+	color: #fff;
+	font: 19px / 1 var(--oot-font);
+}
+
+/* N64 buttons: A blue, C yellow with an arrow */
+.n64 {
+	position: relative;
+	display: inline-grid;
+	flex: none;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	border-radius: 50%;
+	box-shadow:
+		inset 0 -3px 0 rgb(0 0 0 / 0.25),
+		inset 0 2px 0 rgb(255 255 255 / 0.35),
+		0 0 0 2px var(--oot-ink);
+	color: #fff;
+	font: 24px / 1 var(--oot-font);
+	text-shadow: 0 2px 0 rgb(0 0 0 / 0.35);
+}
+
+.n64--a {
+	background: var(--n64-a);
+}
+
+.n64--c {
+	--turn: 0deg;
+	background: var(--n64-c);
+}
+
+.n64--c::after {
+	content: "";
+	position: absolute;
+	inset: 9px;
+	background: #5c3d00;
+	clip-path: polygon(50% 12%, 95% 85%, 5% 85%);
+	rotate: var(--turn);
+}
+
+.n64--c-right {
+	--turn: 90deg;
+}
+
+.n64--c-down {
+	--turn: 180deg;
+}
+
+.n64--c-left {
+	--turn: 270deg;
+}
+
+/* Pixel art drawn by pixelButton() and pixelIcon(): square cells, no smoothing */
+.pixel-art {
+	display: block;
+	shape-rendering: crispEdges;
+}
+
+/* Chunky pixel button, drawn in SVG from a pixel grid (pixel-art.ts): a cap
+   resting on a thick base. Hovering pushes the cap down, pressing sinks it. */
+.pixel-button {
+	width: 60px;
+	height: 60px;
+	padding: 0;
+	border: none;
+	background: none;
+	cursor: pointer;
+	filter: drop-shadow(0 3px 0 rgb(0 0 0 / 0.35));
+	-webkit-tap-highlight-color: transparent;
+}
+
+.pixel-button svg {
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+}
+
+/* In SVG user units: one pixel of the grid. .is-hovered rather than :hover,
+   which would match a button appearing under a cursor that hasn't moved. */
+.pixel-button.is-hovered .pixel-button__cap,
+.pixel-button:focus-visible .pixel-button__cap {
+	transform: translateY(2px);
+}
+
+.pixel-button:active .pixel-button__cap,
+.pixel-button.is-pressed .pixel-button__cap {
+	transform: translateY(3px);
+}
+
+.pixel-button:focus-visible {
+	outline: 3px dashed var(--oot-gold);
+	outline-offset: 4px;
+}

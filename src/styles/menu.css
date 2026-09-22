@@ -1,0 +1,268 @@
+/* Shared menu look, after Ocarina of Time 3D's file select: full-screen
+   dialog, gold title, stone slabs, golden cursor, choices. Used by the
+   settings menu and the song book. */
+
+/* Full-screen dialog, the panel centered in it. The centering stays on the
+   closed state too, or the panel would jump to the corner while fading out. */
+.menu {
+	position: fixed;
+	inset: 0;
+	width: 100%;
+	max-width: none;
+	height: 100%;
+	max-height: none;
+	margin: 0;
+	padding: 92px 16px;
+	box-sizing: border-box;
+	border: none;
+	background: transparent;
+	color: #fff;
+	font-family: var(--oot-font);
+	font-synthesis: none;
+	place-items: center;
+	overflow-y: auto;
+	opacity: 0;
+	transition:
+		opacity 0.22s ease,
+		overlay 0.22s allow-discrete,
+		display 0.22s allow-discrete;
+}
+
+.menu[open] {
+	display: grid;
+	opacity: 1;
+}
+
+.menu::backdrop {
+	background: var(--oot-backdrop);
+	backdrop-filter: var(--oot-backdrop-filter);
+	opacity: 0;
+	transition:
+		opacity 0.22s ease,
+		overlay 0.22s allow-discrete,
+		display 0.22s allow-discrete;
+}
+
+.menu[open]::backdrop {
+	opacity: 1;
+}
+
+.menu__panel {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	width: min(580px, 100%);
+	transform: translateY(12px) scale(0.98);
+	transition: transform 0.22s ease;
+}
+
+.menu[open] .menu__panel {
+	transform: none;
+}
+
+@starting-style {
+	.menu[open],
+	.menu[open]::backdrop {
+		opacity: 0;
+	}
+
+	.menu[open] .menu__panel {
+		transform: translateY(12px) scale(0.98);
+	}
+}
+
+/* Big lettering straight on the scene, gold like the menu cursor */
+.menu__title {
+	margin: 0;
+	color: var(--oot-gold);
+	font-size: 56px;
+	font-weight: 400;
+	line-height: 1;
+	letter-spacing: 0.04em;
+	text-align: center;
+	text-shadow:
+		3px 0 var(--oot-ink),
+		-3px 0 var(--oot-ink),
+		0 3px var(--oot-ink),
+		0 -3px var(--oot-ink),
+		3px 3px var(--oot-ink),
+		-3px 3px var(--oot-ink),
+		3px -3px var(--oot-ink),
+		-3px -3px var(--oot-ink),
+		0 6px var(--oot-gold-shade),
+		3px 6px var(--oot-ink),
+		-3px 6px var(--oot-ink),
+		0 9px var(--oot-ink);
+}
+
+.menu__rows {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	margin: 0;
+	padding: 0 8px;
+	list-style: none;
+}
+
+/* Stone slab, like a file slot */
+.slab {
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px 18px;
+	min-height: 66px;
+	padding: 12px 22px;
+	box-sizing: border-box;
+	border: 3px solid var(--oot-stone-edge);
+	border-radius: 12px;
+	background:
+		var(--stone-shade) 0 0 / 260px 260px,
+		var(--stone-speck) 0 0 / 180px 180px,
+		linear-gradient(to bottom, var(--oot-stone-top), var(--oot-stone-bottom));
+	box-shadow:
+		inset 0 2px 0 rgb(255 255 255 / 0.35),
+		inset 0 -3px 0 rgb(0 0 0 / 0.18),
+		0 4px 0 rgb(0 0 0 / 0.35);
+	cursor: default;
+	outline: none;
+	transition: border-color 0.15s ease;
+}
+
+.slab.is-selected {
+	border-color: #eceeff;
+}
+
+/* Golden cursor corners, around slabs and any other .cursor-frame. The
+   corners' size and distance can be tuned per element. */
+.slab,
+.cursor-frame {
+	--corner: 20px;
+	--thickness: 5px;
+	--cursor-inset: -9px;
+	--cursor-pulse: -5px;
+}
+
+.slab::after,
+.cursor-frame::after {
+	content: "";
+	position: absolute;
+	inset: var(--cursor-inset);
+	background:
+		linear-gradient(var(--oot-gold) 0 0) top left / var(--corner)
+		var(--thickness),
+		linear-gradient(var(--oot-gold) 0 0) top left / var(--thickness)
+		var(--corner),
+		linear-gradient(var(--oot-gold) 0 0) top right / var(--corner)
+		var(--thickness),
+		linear-gradient(var(--oot-gold) 0 0) top right / var(--thickness)
+		var(--corner),
+		linear-gradient(var(--oot-gold) 0 0) bottom left / var(--corner)
+		var(--thickness),
+		linear-gradient(var(--oot-gold) 0 0) bottom left / var(--thickness)
+		var(--corner),
+		linear-gradient(var(--oot-gold) 0 0) bottom right / var(--corner)
+		var(--thickness),
+		linear-gradient(var(--oot-gold) 0 0) bottom right / var(--thickness)
+		var(--corner);
+	background-repeat: no-repeat;
+	filter: drop-shadow(0 0 1px var(--oot-gold-shade))
+		drop-shadow(0 1px 0 var(--oot-gold-shade));
+	opacity: 0;
+	pointer-events: none;
+}
+
+.slab.is-selected::after,
+.cursor-frame.is-selected::after {
+	opacity: 1;
+	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
+}
+
+@keyframes cursor-pulse {
+	to {
+		inset: var(--cursor-pulse);
+	}
+}
+
+.slab__label {
+	font-size: 30px;
+	line-height: 1;
+}
+
+/* On / Off */
+.switch {
+	display: flex;
+	gap: 6px;
+	padding: 0;
+	border: none;
+	background: none;
+	font: 30px / 1 var(--oot-font);
+	cursor: pointer;
+	outline: none;
+	/* One button for both choices: WebKit's tap highlight would cover them all */
+	-webkit-tap-highlight-color: transparent;
+}
+
+.switch__choice {
+	padding: 6px 10px;
+	opacity: 0.4;
+	transition: opacity 0.15s ease;
+}
+
+.switch__choice.is-active {
+	opacity: 1;
+}
+
+.switch__choice:not(.is-active):hover {
+	opacity: 0.7;
+}
+
+/* Closes the menu from the corner where its toggle sits */
+.menu__close {
+	position: fixed;
+	bottom: var(--corner-margin);
+	left: var(--corner-margin);
+}
+
+@media (max-width: 480px) {
+	.slab {
+		padding: 12px 16px;
+	}
+
+	.slab__label,
+	.switch {
+		font-size: 26px;
+	}
+
+	.menu__title {
+		font-size: 46px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.menu,
+	.menu::backdrop,
+	.menu__panel {
+		transition: none;
+	}
+
+	.slab.is-selected::after,
+	.cursor-frame.is-selected::after {
+		animation: none;
+	}
+}
+
+/* Touch screens: after the rules they override */
+@media (hover: none) and (pointer: coarse) {
+	/* Same room top and bottom, or the panel sits off-center */
+	.menu {
+		padding: calc(92px + env(safe-area-inset-top)) 16px
+			calc(92px + env(safe-area-inset-bottom));
+	}
+
+	.menu__close {
+		top: calc(var(--corner-margin) + env(safe-area-inset-top));
+		bottom: auto;
+	}
+}

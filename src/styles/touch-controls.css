@@ -1,0 +1,103 @@
+/* On-screen ocarina buttons, for touch screens only */
+
+.touch-controls {
+	display: none;
+}
+
+@media (hover: none) and (pointer: coarse) {
+	.touch-controls {
+		display: block;
+	}
+}
+
+.touch-controls__pad {
+	position: fixed;
+	bottom: calc(40px + env(safe-area-inset-bottom));
+	touch-action: none;
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+}
+
+/* Left thumb, resting on the same line as the bottom row of C buttons (left,
+   down, right): the A button is drawn 8px above its touch area's bottom, the
+   C buttons 3px above their cell's */
+.touch-controls__pad--a {
+	bottom: calc(35px + env(safe-area-inset-bottom));
+	left: calc(20px + env(safe-area-inset-left));
+}
+
+/* Right thumb: the C buttons laid out like a keyboard's arrow keys, up on top
+   of left, down and right */
+.touch-controls__pad--c {
+	right: calc(16px + env(safe-area-inset-right));
+	display: grid;
+	grid-template: repeat(2, 66px) / repeat(3, 66px);
+}
+
+.touch-controls__button {
+	display: grid;
+	place-items: center;
+	width: 100%;
+	height: 100%;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.touch-controls__pad--a .touch-controls__button {
+	width: 96px;
+	height: 96px;
+}
+
+/* The corner pixel buttons, in the N64 colors: cells of 3px for the C
+   buttons, 4px for A. Only the touch area takes the finger. */
+.touch-controls .pixel-button {
+	display: block;
+	pointer-events: none;
+	cursor: auto;
+}
+
+.touch-controls__pad--a .pixel-button {
+	width: 80px;
+	height: 80px;
+	filter: drop-shadow(0 4px 0 rgb(0 0 0 / 0.35));
+}
+
+.touch-controls .pixel-button svg {
+	transition:
+		opacity 0.2s ease,
+		filter 0.2s ease;
+}
+
+/* Held: the cap sinks into its base. It snaps, no easing. */
+.touch-controls__button.is-pressed .pixel-button__cap {
+	transform: translateY(3px);
+}
+
+.touch-controls__button[data-button="CUp"] {
+	grid-area: 1 / 2;
+}
+
+.touch-controls__button[data-button="CLeft"] {
+	grid-area: 2 / 1;
+}
+
+.touch-controls__button[data-button="CDown"] {
+	grid-area: 2 / 2;
+}
+
+.touch-controls__button[data-button="CRight"] {
+	grid-area: 2 / 3;
+}
+
+/* Disabled while a recognized song plays back: greyed out like an item you
+   can't use in the game's menus */
+.touch-controls.is-disabled .pixel-button svg {
+	opacity: 0.55;
+	filter: grayscale(1) brightness(0.8);
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.touch-controls .pixel-button svg {
+		transition: none;
+	}
+}

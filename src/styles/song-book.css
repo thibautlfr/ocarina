@@ -1,0 +1,544 @@
+/* Song book, after the songs of Ocarina of Time's quest status screen */
+
+/* Next to the settings gear: to its right, or under it on touch screens.
+   The close button stays in the corner, like the settings menu's. */
+.song-book-toggle {
+	position: fixed;
+	bottom: var(--corner-margin);
+	left: calc(var(--corner-margin) + var(--corner-step));
+}
+
+/* New songs to see in the book: a blinking gold gem on the button's corner */
+.song-book-toggle__badge {
+	position: absolute;
+	top: -4px;
+	right: -4px;
+	width: 12px;
+	height: 12px;
+	border: 3px solid var(--oot-ink);
+	background: var(--oot-gold);
+	box-shadow: inset -3px -3px 0 var(--oot-gold-shade);
+	animation: badge-blink 1s steps(1) infinite;
+	pointer-events: none;
+}
+
+.song-book-toggle__badge[hidden] {
+	display: none;
+}
+
+@keyframes badge-blink {
+	50% {
+		background: #fff;
+	}
+}
+
+/* The nudge: a slab next to the book's button, in the slot the About button
+   takes when it's shown — the two are never up at the same time, the hint
+   only ever appears to a player who hasn't learned a single song. */
+.song-hint {
+	position: fixed;
+	bottom: var(--corner-margin);
+	left: calc(var(--corner-margin) + var(--corner-step) * 2);
+	z-index: 1;
+	flex-wrap: nowrap;
+	justify-content: center;
+	/* The button's own height, so the two line up */
+	min-height: 60px;
+	max-width: calc(100% - var(--corner-margin) * 2 - var(--corner-step) * 2);
+	padding: 6px 18px;
+	font-family: var(--oot-font);
+	font-synthesis: none;
+	opacity: 0;
+	visibility: hidden;
+	translate: -10px 0;
+	cursor: pointer;
+	transition:
+		opacity 0.22s ease,
+		translate 0.22s ease,
+		visibility 0s 0.22s;
+}
+
+.song-hint.is-visible {
+	opacity: 1;
+	visibility: visible;
+	translate: 0 0;
+	transition:
+		opacity 0.22s ease,
+		translate 0.22s ease;
+}
+
+.song-hint__text {
+	font-size: 26px;
+	line-height: 1;
+	white-space: nowrap;
+}
+
+.song-hint.is-hovered::after,
+.song-hint:focus-visible::after {
+	opacity: 1;
+	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
+}
+
+/* The book's button pushes itself down, as if asking to be pressed */
+.song-book-toggle.is-nudging .pixel-button__cap {
+	animation: song-hint-press 1.8s ease-in-out infinite;
+}
+
+@keyframes song-hint-press {
+	0%,
+	72%,
+	100% {
+		transform: translateY(0);
+	}
+
+	82%,
+	90% {
+		transform: translateY(2px);
+	}
+}
+
+.slab--centered {
+	justify-content: center;
+}
+
+.song-book__games {
+	flex-wrap: wrap;
+	justify-content: center;
+}
+
+.song-book__book {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 12px;
+	padding-top: 20px;
+}
+
+/* The notes, shelf by shelf */
+.song-book__shelves {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	outline: none;
+}
+
+.song-book__shelf {
+	display: flex;
+	justify-content: center;
+	gap: 12px;
+}
+
+.song-note {
+	--corner: 10px;
+	--thickness: 4px;
+	--cursor-inset: -6px;
+	--cursor-pulse: -3px;
+	--edge: var(--oot-ink);
+	position: relative;
+	display: block;
+	cursor: pointer;
+}
+
+/* 14×19 cells at 3px each */
+.song-note svg {
+	width: 42px;
+	height: 57px;
+}
+
+.song-note--white {
+	--face: #eef0f8;
+	--light: #ffffff;
+	--shade: #a9adc4;
+}
+
+.song-note--green {
+	--face: #3fce4a;
+	--light: #a8f79a;
+	--shade: #16822b;
+}
+
+.song-note--red {
+	--face: #e8432c;
+	--light: #ff9e7a;
+	--shade: #9a1f14;
+}
+
+.song-note--blue {
+	--face: #3f86f2;
+	--light: #9cc8ff;
+	--shade: #1d4ea6;
+}
+
+.song-note--orange {
+	--face: #f28a1f;
+	--light: #ffc877;
+	--shade: #a8520a;
+}
+
+.song-note--purple {
+	--face: #a85de6;
+	--light: #d9adff;
+	--shade: #6a2da3;
+}
+
+.song-note--yellow {
+	--face: #f5d63a;
+	--light: #fff4a3;
+	--shade: #b08e0c;
+}
+
+.song-note--pink {
+	--face: #f47fc0;
+	--light: #ffc7e6;
+	--shade: #b04585;
+}
+
+/* Not learned yet: an empty slot carved in the stone */
+.song-note.is-locked {
+	--face: #6b71a6;
+	--light: #5a6094;
+	--shade: #7c83ba;
+	--edge: #3a3e66;
+}
+
+/* Learned since the book was last opened: pops out of its slot */
+.song-note.is-new svg {
+	animation: song-note-reveal 0.5s steps(5) var(--reveal-delay, 0s) backwards;
+}
+
+.song-note.is-new::before {
+	content: "";
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 6px;
+	height: 6px;
+	background: var(--oot-gold);
+	box-shadow:
+		0 -34px var(--oot-gold),
+		0 34px var(--oot-gold),
+		-30px 0 var(--oot-gold),
+		30px 0 var(--oot-gold),
+		-22px -24px #fff,
+		22px -24px #fff,
+		-22px 24px #fff,
+		22px 24px #fff;
+	opacity: 0;
+	translate: -50% -50%;
+	animation: song-note-sparkle 0.6s steps(4)
+		calc(var(--reveal-delay, 0s) + 0.2s);
+	pointer-events: none;
+}
+
+@keyframes song-note-reveal {
+	from {
+		filter: brightness(0.4);
+		scale: 0.3;
+	}
+
+	60% {
+		filter: brightness(2.5);
+		scale: 1.3;
+	}
+
+	to {
+		filter: none;
+		scale: 1;
+	}
+}
+
+@keyframes song-note-sparkle {
+	from {
+		opacity: 1;
+		scale: 0.4;
+	}
+
+	to {
+		opacity: 0;
+		scale: 1.2;
+	}
+}
+
+.song-book__name {
+	margin: 4px 0 0;
+	font-size: 30px;
+	line-height: 1;
+	text-align: center;
+}
+
+/* Five lines 16px apart, 20px from the top: the bottom one (E4) is at 84px */
+.staff {
+	--line-gap: 16px;
+	--bottom-line: 85.5px;
+	position: relative;
+	height: 124px;
+}
+
+.staff__lines {
+	position: absolute;
+	top: 20px;
+	right: 0;
+	left: 0;
+	height: calc(4 * var(--line-gap) + 3px);
+	background: repeating-linear-gradient(
+		to bottom,
+		var(--oot-ink) 0 3px,
+		transparent 3px var(--line-gap)
+	);
+}
+
+/* Its spiral centered on the G line */
+.staff__clef {
+	--face: #fff;
+	--light: #fff;
+	--shade: #c9cbe0;
+	--edge: var(--oot-ink);
+	position: absolute;
+	top: 16px;
+	left: 4px;
+}
+
+.staff__clef svg {
+	width: 42px;
+	height: 108px;
+}
+
+.staff__notes {
+	position: absolute;
+	inset: 0 0 0 58px;
+	display: flex;
+	justify-content: space-evenly;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.staff__note {
+	position: relative;
+	width: 28px;
+}
+
+/* A step is half the gap between two lines */
+.staff__note .n64 {
+	position: absolute;
+	top: calc(var(--bottom-line) - var(--step) * var(--line-gap) / 2 - 14px);
+	left: 0;
+	width: 28px;
+	height: 28px;
+	font-size: 23px;
+}
+
+.staff__note .n64--c::after {
+	inset: 7px;
+}
+
+/* Lit while the ocarina plays it */
+.staff__note.is-playing .n64 {
+	scale: 1.25;
+	box-shadow:
+		inset 0 -3px 0 rgb(0 0 0 / 0.25),
+		inset 0 2px 0 rgb(255 255 255 / 0.35),
+		0 0 0 2px var(--oot-ink),
+		0 0 0 4px var(--oot-gold);
+}
+
+/* "You learned …!", on a slab like the menus', while the jingle plays */
+.song-learned {
+	position: fixed;
+	top: 24px;
+	left: 50%;
+	z-index: 1;
+	flex-wrap: nowrap;
+	justify-content: flex-start;
+	gap: 10px;
+	width: max-content;
+	max-width: calc(100% - 32px);
+	min-height: 0;
+	padding: 6px 16px 6px 12px;
+	font-family: var(--oot-font);
+	font-synthesis: none;
+	opacity: 0;
+	visibility: hidden;
+	translate: -50% -12px;
+	pointer-events: none;
+	transition:
+		opacity 0.22s ease,
+		translate 0.22s ease,
+		visibility 0s 0.22s;
+}
+
+.song-learned.is-visible {
+	opacity: 1;
+	visibility: visible;
+	translate: -50% 0;
+	transition:
+		opacity 0.22s ease,
+		translate 0.22s ease;
+}
+
+.song-learned__note {
+	flex: none;
+	cursor: default;
+}
+
+/* Smaller than the book's notes: 2px cells */
+.song-learned__note svg {
+	width: 28px;
+	height: 38px;
+}
+
+.song-learned.is-visible .song-learned__note svg {
+	animation: song-note-reveal 0.5s steps(5) 0.15s backwards;
+}
+
+/* Room for the share line under the text, on the first song only */
+.song-learned--share {
+	padding-bottom: 10px;
+}
+
+.song-learned__body {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+}
+
+.song-learned__text {
+	margin: 0;
+	font-size: 24px;
+	line-height: 1;
+	text-wrap: balance;
+}
+
+/* The one offer to share outside the About and the completion, on the moment
+   the experience clicks: white until the cursor takes it, like the signature.
+   The slab ignores the pointer; this line is the only thing in it that can be
+   clicked, so the scene can still be dragged around it. */
+.song-learned__share {
+	--corner: 10px;
+	--thickness: 4px;
+	--cursor-inset: -4px -8px;
+	--cursor-pulse: -2px -6px;
+	position: relative;
+	padding: 2px 4px;
+	border: none;
+	background: none;
+	color: #fff;
+	font: 22px / 1 var(--oot-font);
+	font-synthesis: none;
+	cursor: pointer;
+	outline: none;
+	pointer-events: auto;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.song-learned__share[hidden] {
+	display: none;
+}
+
+.song-learned__share.is-hovered::after,
+.song-learned__share:focus-visible::after {
+	opacity: 1;
+	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
+}
+
+.song-learned__share.is-copied {
+	color: var(--oot-gold);
+}
+
+.song-learned__text strong {
+	color: var(--oot-gold);
+	font-weight: 400;
+}
+
+@media (max-width: 480px) {
+	/* One game per line */
+	.song-book__games {
+		flex-direction: column;
+		align-items: center;
+		gap: 0;
+	}
+
+	.song-book__games .switch__choice {
+		padding: 4px 10px;
+	}
+
+	.song-book__shelf {
+		gap: 4px;
+	}
+
+	.song-book__name {
+		font-size: 26px;
+	}
+
+	.staff__notes {
+		left: 50px;
+	}
+
+	.song-learned__text {
+		font-size: 22px;
+	}
+
+	.song-learned__share {
+		font-size: 20px;
+	}
+
+	.song-hint__text {
+		font-size: 22px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.song-book-toggle__badge,
+	.song-note.is-new svg,
+	.song-note.is-new::before,
+	.song-learned.is-visible .song-learned__note svg,
+	.song-book-toggle.is-nudging .pixel-button__cap,
+	.song-hint.is-hovered::after,
+	.song-hint:focus-visible::after,
+	.song-learned__share.is-hovered::after,
+	.song-learned__share:focus-visible::after {
+		animation: none;
+	}
+
+	.song-learned,
+	.song-learned.is-visible,
+	.song-hint,
+	.song-hint.is-visible {
+		transition: none;
+	}
+}
+
+/* Touch screens: after the rules they override */
+@media (hover: none) and (pointer: coarse) {
+	.song-book-toggle {
+		top: calc(
+			var(--corner-margin) +
+			var(--corner-step) +
+			env(safe-area-inset-top)
+		);
+		bottom: auto;
+		left: var(--corner-margin);
+	}
+
+	.song-learned {
+		top: calc(var(--corner-margin) + env(safe-area-inset-top));
+	}
+
+	/* Beside the book's button, which moved to the left column */
+	.song-hint {
+		top: calc(
+			var(--corner-margin) +
+			var(--corner-step) +
+			env(safe-area-inset-top)
+		);
+		bottom: auto;
+		left: calc(var(--corner-margin) + var(--corner-step));
+		max-width: calc(100% - var(--corner-margin) * 2 - var(--corner-step));
+	}
+
+	/* One line each, so the slab fits the longest one instead of stretching
+	   around wrapped text */
+	.song-learned__text span {
+		display: block;
+	}
+}

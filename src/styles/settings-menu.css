@@ -1,0 +1,101 @@
+/* Settings menu, after Ocarina of Time 3D's file select */
+
+/* Corner button: bottom-left, or top-left on touch screens, where the ocarina
+   buttons take the bottom corners. The menu's Close button takes its spot. */
+.menu-toggle {
+	position: fixed;
+	bottom: var(--corner-margin);
+	left: var(--corner-margin);
+}
+
+/* Volume: bars growing taller, lit in magic green up to the current level */
+.volume {
+	display: flex;
+	align-items: flex-end;
+	gap: 6px;
+	height: 40px;
+	padding: 0 2px 4px;
+	cursor: pointer;
+	outline: none;
+}
+
+.volume__bar {
+	width: 22px;
+	height: calc(12px + var(--level) * 6px);
+	box-sizing: border-box;
+	border: 3px solid var(--oot-ink);
+	background: rgb(20 22 44 / 0.55);
+	box-shadow: 0 3px 0 rgb(0 0 0 / 0.3);
+}
+
+.volume__bar.is-lit {
+	background: var(--oot-magic);
+}
+
+.volume__bar:not(.is-lit):hover {
+	background: rgb(51 220 79 / 0.35);
+}
+
+/* Songs learned: Erase, then Yes or No */
+.progress-erase:not(.is-confirming) [data-choice="yes"],
+.progress-erase:not(.is-confirming) [data-choice="no"],
+.progress-erase.is-confirming [data-choice="erase"] {
+	display: none;
+}
+
+.progress-erase[aria-disabled="true"] {
+	cursor: default;
+}
+
+.progress-erase[aria-disabled="true"] .switch__choice:hover {
+	opacity: 0.4;
+}
+
+/* Controls: one column per ocarina button, its keys under it */
+.slab--controls {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 14px;
+	padding-bottom: 16px;
+}
+
+.note-keys {
+	display: grid;
+	grid-template-columns: repeat(5, 1fr);
+	gap: 8px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.note-keys__item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 10px;
+}
+
+.note-keys__keys {
+	display: flex;
+	gap: 4px;
+}
+
+@media (max-width: 480px) {
+	.note-keys__keys {
+		flex-direction: column;
+		align-items: center;
+	}
+}
+
+/* Touch screens: after the rules they override */
+@media (hover: none) and (pointer: coarse) {
+	.menu-toggle {
+		top: calc(var(--corner-margin) + env(safe-area-inset-top));
+		bottom: auto;
+	}
+
+	/* Keyboard keys mean nothing here: the buttons are on screen */
+	.slab--controls {
+		display: none;
+	}
+}

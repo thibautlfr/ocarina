@@ -1,0 +1,235 @@
+/* About: who made the experience, their links, and the credits */
+
+/* Signature, in the corner opposite the game's buttons: small and dimmed so it
+   stays out of the scene, gold under the pointer. */
+.about-toggle {
+	--corner: 9px;
+	--thickness: 4px;
+	--cursor-inset: -5px -7px;
+	--cursor-pulse: -3px -5px;
+	position: fixed;
+	right: var(--corner-margin);
+	bottom: calc(var(--corner-margin) + 4px);
+	padding: 4px 2px;
+	border: none;
+	background: none;
+	color: #fff;
+	font: 22px / 1 var(--oot-font);
+	font-synthesis: none;
+	cursor: pointer;
+	outline: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* Dimmed on its own element: the title screen fades the button itself in, and
+   this must not fade with it but snap, like every pixel element */
+.about-toggle__label {
+	opacity: 0.55;
+}
+
+.about-toggle.is-hovered,
+.about-toggle:focus-visible {
+	color: var(--oot-gold);
+}
+
+.about-toggle.is-hovered .about-toggle__label,
+.about-toggle:focus-visible .about-toggle__label {
+	opacity: 1;
+}
+
+.about-toggle.is-hovered::after,
+.about-toggle:focus-visible::after {
+	opacity: 1;
+	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
+}
+
+.about-toggle__by {
+	font-size: 18px;
+	opacity: 0.8;
+}
+
+/* Third of the game's buttons, after the gear and the song book: the About is
+   the page that must be findable, so it doesn't rely on the signature alone.
+   TODO: hidden for now, kept for the day the signature proves too discreet —
+   drop the `display` to bring it back (the `menu opened` event carries which
+   way in was used in `from`). */
+.about-button {
+	display: none;
+	position: fixed;
+	bottom: var(--corner-margin);
+	left: calc(var(--corner-margin) + var(--corner-step) * 2);
+}
+
+.about a {
+	position: relative;
+	text-decoration: none;
+	outline: none;
+	-webkit-tap-highlight-color: transparent;
+}
+
+/* Made by <name>, then the social icons */
+.about__made-by {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: 0 10px;
+	margin: 0;
+	font-size: 30px;
+	line-height: 1;
+}
+
+.about__name {
+	--corner: 10px;
+	--thickness: 4px;
+	--cursor-inset: -6px -8px;
+	--cursor-pulse: -4px -6px;
+	color: var(--oot-gold);
+}
+
+.about__socials {
+	display: flex;
+	gap: 14px;
+}
+
+.about__social {
+	--corner: 10px;
+	--thickness: 4px;
+	--cursor-inset: -7px;
+	--cursor-pulse: -4px;
+	--face: #fff;
+	--light: #fff;
+	--shade: #d6d8ec;
+	--edge: var(--oot-ink);
+	display: block;
+}
+
+.about__social svg {
+	display: block;
+	height: 45px;
+}
+
+/* The one thing the experience asks back. The whole stone is the button, so it
+   hands its padding to the link and the link fills it, at any width: one thing
+   to aim at, and one cursor to show it — the slab's own golden corners. No
+   small corners of its own, two frames around one link read as two choices.
+   Picked, the gold goes white, like the slab's border. */
+.about__feedback {
+	padding: 0;
+}
+
+.about__action {
+	flex: 1;
+	align-self: stretch;
+	display: grid;
+	place-items: center;
+	padding: 12px 22px;
+	color: var(--oot-gold);
+	font-size: 30px;
+	line-height: 1;
+	transition: color 0.15s ease;
+}
+
+.about__action.is-selected {
+	color: #fff;
+}
+
+/* Credits: what on the left, who on the right, one link per line */
+.about__credits {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 10px;
+	padding-bottom: 16px;
+}
+
+.about__credit-list {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.about__credit {
+	--corner: 10px;
+	--thickness: 4px;
+	--cursor-inset: -2px -8px;
+	--cursor-pulse: 0 -6px;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-between;
+	gap: 0 16px;
+	padding: 4px 0;
+	font-size: 24px;
+	line-height: 1;
+}
+
+.about__who {
+	color: var(--oot-gold);
+}
+
+/* Straight on the scene, small and dimmed: not a slab */
+.about__footer {
+	padding-top: 6px;
+	text-align: center;
+}
+
+.about__disclaimer {
+	margin: 0;
+	font-size: 20px;
+	line-height: 1.1;
+	opacity: 0.75;
+}
+
+.about__disclaimer span {
+	display: block;
+}
+
+@media (max-width: 480px) {
+	.about__made-by,
+	.about__action {
+		font-size: 26px;
+	}
+
+	.about__social svg {
+		height: 39px;
+	}
+
+	/* Who under what: the longest lines don't fit side by side */
+	.about__credit {
+		flex-direction: column;
+		gap: 2px;
+		font-size: 22px;
+	}
+
+	.about__disclaimer {
+		font-size: 18px;
+	}
+}
+
+/* Touch screens: after the rules they override. The ocarina buttons take both
+   bottom corners, so the signature moves to the top right. */
+@media (hover: none) and (pointer: coarse) {
+	.about-toggle {
+		top: calc(var(--corner-margin) + env(safe-area-inset-top));
+		right: calc(var(--corner-margin) + env(safe-area-inset-right));
+		bottom: auto;
+	}
+
+	/* Under the song book, the game's buttons running down the top left */
+	.about-button {
+		top: calc(
+			var(--corner-margin) +
+			var(--corner-step) *
+			2 +
+			env(safe-area-inset-top)
+		);
+		bottom: auto;
+		left: var(--corner-margin);
+	}
+
+	/* No pointer to light it up here */
+	.about-toggle__label {
+		opacity: 0.7;
+	}
+}
