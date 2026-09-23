@@ -3,8 +3,9 @@ import Experience from "../experience.ts";
 import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
 import { listen } from "../utils/events.ts";
 import { fragment, query, queryAll } from "./dom.ts";
-import aButton from "./pixel/buttons/a.svg?raw";
-import arrowButton from "./pixel/buttons/arrow.svg?raw";
+import arrowGlyph from "./pixel/glyphs/arrow-right.svg?raw";
+import letterAGlyph from "./pixel/glyphs/letter-a.svg?raw";
+import { pixelButton } from "./pixel-button.ts";
 
 // In the order of their arrow-key layout: up above left, down, right
 const C_BUTTONS: OcarinaButton[] = ["CUp", "CLeft", "CDown", "CRight"];
@@ -14,7 +15,9 @@ const HAPTIC_MS = 8;
 // The touch area is larger than the pixel button drawn in it
 const touchButton = (button: OcarinaButton) => `
 <div class="touch-controls__button" role="button" aria-label="${BUTTON_LABELS[button]}" data-button="${button}">
-	<span class="pixel-button" aria-hidden="true">${button === "A" ? aButton : arrowButton}</span>
+	<span class="pixel-button pixel-button--${button === "A" ? "a" : "c"}" aria-hidden="true">
+		${pixelButton(button === "A" ? letterAGlyph : arrowGlyph)}
+	</span>
 </div>`;
 
 const TEMPLATE = /* html */ `

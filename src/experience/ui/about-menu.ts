@@ -2,10 +2,11 @@ import "../../styles/menu.css";
 import "../../styles/about-menu.css";
 import { closest, fragment, query, queryAll } from "./dom.ts";
 import Menu, { CLOSE_BUTTON, type MenuAction, playMenuSound } from "./menu.ts";
-import aboutIcon from "./pixel/buttons/about.svg?raw";
+import infoGlyph from "./pixel/glyphs/info.svg?raw";
 import githubIcon from "./pixel/icons/github.svg?raw";
 import linkedinIcon from "./pixel/icons/linkedin.svg?raw";
 import xLogoIcon from "./pixel/icons/x-logo.svg?raw";
+import { pixelButton } from "./pixel-button.ts";
 
 const AUTHOR = "Thibaut Lefrançois";
 const WEBSITE = "https://thibaut-lefrancois.com";
@@ -59,8 +60,8 @@ const TEMPLATE = /* html */ `
 <button class="about-toggle cursor-frame oot-text" type="button" title="About" aria-haspopup="dialog" aria-controls="about-menu">
 	<span class="about-toggle__label"><span class="about-toggle__by">by</span> ${AUTHOR}</span>
 </button>
-<button class="pixel-button about-button" type="button" aria-label="About" title="About" aria-haspopup="dialog" aria-controls="about-menu">
-	${aboutIcon}
+<button class="pixel-button pixel-button--about about-button" type="button" aria-label="About" title="About" aria-haspopup="dialog" aria-controls="about-menu">
+	${pixelButton(infoGlyph)}
 </button>
 <dialog class="menu about" id="about-menu" aria-labelledby="about-title">
 	<div class="menu__panel">

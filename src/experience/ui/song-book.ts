@@ -17,9 +17,10 @@ import Menu, {
 	n64Icon,
 	playMenuSound,
 } from "./menu.ts";
-import songIcon from "./pixel/buttons/song.svg?raw";
+import eighthNoteGlyph from "./pixel/glyphs/eighth-note.svg?raw";
 import songNoteIcon from "./pixel/icons/song-note.svg?raw";
 import trebleClefIcon from "./pixel/icons/treble-clef.svg?raw";
+import { pixelButton } from "./pixel-button.ts";
 import SongHint from "./song-hint.ts";
 import SongLearned from "./song-learned.ts";
 
@@ -95,7 +96,7 @@ type Cursor = { shelf: number; note: number };
 
 const TEMPLATE = /* html */ `
 <button class="pixel-button song-book-toggle" type="button" aria-label="Songs" title="Songs" aria-haspopup="dialog" aria-controls="song-book">
-	${songIcon}
+	${pixelButton(eighthNoteGlyph)}
 	<span class="song-book-toggle__badge" hidden></span>
 </button>
 <dialog class="menu song-book" id="song-book" aria-labelledby="song-book-title">

@@ -105,9 +105,14 @@
 	shape-rendering: crispEdges;
 }
 
-/* A cap resting on a base: hovering pushes the cap down, pressing sinks it
-   further */
+/* A cap resting on a base (pixel-button.ts): hovering pushes the cap down,
+   pressing sinks it further */
 .pixel-button {
+	--edge: #1b1d24;
+	--shade: #5f6473;
+	--face: #a3a7b3;
+	--light: #dfe2e8;
+	--glyph: #2c2f3a;
 	width: 60px;
 	height: 60px;
 	padding: 0;
@@ -118,10 +123,49 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-.pixel-button svg {
+.pixel-button--close {
+	--edge: #2b0906;
+	--shade: #9a2317;
+	--face: #e2462b;
+	--light: #ff9e63;
+	--glyph: #3d0c06;
+}
+
+.pixel-button--about {
+	--edge: #2a1800;
+	--shade: #7a4b00;
+	--face: #d2921a;
+	--light: #f7d270;
+	--glyph: #5a3a00;
+}
+
+.pixel-button--a {
+	--edge: #0b1533;
+	--shade: #173c8c;
+	--face: #2e6ae0;
+	--light: #7fa6f5;
+	--glyph: #fff;
+}
+
+.pixel-button--c {
+	--edge: #2b1d00;
+	--shade: #a87a00;
+	--face: #f4c20d;
+	--light: #ffe98a;
+	--glyph: #5c3d00;
+}
+
+.pixel-button > svg {
 	width: 100%;
 	height: 100%;
+}
+
+.pixel-button svg {
 	overflow: visible;
+}
+
+.pixel-button__glyph {
+	color: var(--glyph);
 }
 
 /* Offsets in the SVG's units (viewBox 0 0 136 132). .is-hovered rather than

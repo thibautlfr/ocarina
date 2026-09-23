@@ -2,12 +2,13 @@ import Experience from "../experience.ts";
 import { hasModifier } from "../input/keyboard.ts";
 import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
 import { query, queryAll, trackHover } from "./dom.ts";
-import closeIcon from "./pixel/buttons/close.svg?raw";
+import crossGlyph from "./pixel/glyphs/cross.svg?raw";
+import { pixelButton } from "./pixel-button.ts";
 
 // Sits in the corner, over the button that opened the menu
 export const CLOSE_BUTTON = /* html */ `
-<button class="pixel-button menu__close" type="button" aria-label="Close" title="Close (Esc)">
-	${closeIcon}
+<button class="pixel-button pixel-button--close menu__close" type="button" aria-label="Close" title="Close (Esc)">
+	${pixelButton(crossGlyph)}
 </button>`;
 
 export type MenuAction = "up" | "down" | "left" | "right" | "confirm" | "back";

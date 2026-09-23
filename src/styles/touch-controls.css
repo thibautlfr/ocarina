@@ -59,7 +59,7 @@
 	filter: drop-shadow(0 4px 0 rgb(0 0 0 / 0.35));
 }
 
-.touch-controls .pixel-button svg {
+.touch-controls .pixel-button > svg {
 	transition:
 		opacity 0.2s ease,
 		filter 0.2s ease;
@@ -86,32 +86,32 @@
 	grid-area: 2 / 3;
 }
 
-/* arrow.svg points down */
-.touch-controls .pixel-button__glyph {
+/* arrow-right.svg points right */
+.touch-controls .pixel-button__glyph path {
 	transform-box: fill-box;
 	transform-origin: center;
 }
 
-[data-button="CUp"] .pixel-button__glyph {
-	rotate: 180deg;
-}
-
-[data-button="CLeft"] .pixel-button__glyph {
-	rotate: 90deg;
-}
-
-[data-button="CRight"] .pixel-button__glyph {
+[data-button="CUp"] .pixel-button__glyph path {
 	rotate: -90deg;
 }
 
+[data-button="CLeft"] .pixel-button__glyph path {
+	rotate: 180deg;
+}
+
+[data-button="CDown"] .pixel-button__glyph path {
+	rotate: 90deg;
+}
+
 /* Greyed out while the keyboard is locked, e.g. during a song replay */
-.touch-controls.is-disabled .pixel-button svg {
+.touch-controls.is-disabled .pixel-button > svg {
 	opacity: 0.55;
 	filter: grayscale(1) brightness(0.8);
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.touch-controls .pixel-button svg {
+	.touch-controls .pixel-button > svg {
 		transition: none;
 	}
 }

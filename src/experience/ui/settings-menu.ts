@@ -11,7 +11,8 @@ import Menu, {
 	n64Icon,
 	playMenuSound,
 } from "./menu.ts";
-import gearIcon from "./pixel/buttons/gear.svg?raw";
+import gearGlyph from "./pixel/glyphs/gear.svg?raw";
+import { pixelButton } from "./pixel-button.ts";
 
 // The volume setting goes from 0 to 1 in this many steps
 const VOLUME_LEVELS = 5;
@@ -38,7 +39,7 @@ const CONTROLS: { button: OcarinaButton; label?: string; keys: string[] }[] = [
 
 const TEMPLATE = /* html */ `
 <button class="pixel-button menu-toggle" type="button" aria-label="Settings" title="Settings (Esc)" aria-haspopup="dialog" aria-controls="settings-menu">
-	${gearIcon}
+	${pixelButton(gearGlyph)}
 </button>
 <dialog class="menu" id="settings-menu" aria-labelledby="menu-title">
 	<div class="menu__panel">
