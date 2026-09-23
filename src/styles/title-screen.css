@@ -1,5 +1,4 @@
-/* Title screen: the loading gauge, then "Press Start" over the blurred scene.
-   Browsers only play sound after a gesture, so the player enters from here. */
+/* Title screen: the loading gauge, then "Press Start" over the blurred scene */
 
 .title-screen {
 	position: fixed;
@@ -51,9 +50,7 @@
 	pointer-events: none;
 }
 
-/* How to play, in the gap between Start and the sound hint. On a touch screen
-   the A and C buttons are on screen; on a keyboard nothing says the ocarina is
-   played at all, and the player is reading this screen anyway. */
+/* The keyboard controls, between Start and the sound hint */
 .title-screen__controls {
 	grid-row: 4;
 	align-self: center;
@@ -69,7 +66,6 @@
 	visibility: visible;
 }
 
-/* Quieter than the title, like the sound hint it sits above */
 .title-screen__controls-label {
 	margin: 0;
 	font-size: 24px;
@@ -218,12 +214,10 @@
 	line-height: 1;
 }
 
-/* A hint, quieter than the title */
 .title-screen.is-font-ready .title-screen__sound {
 	opacity: 0.7;
 }
 
-/* White like the game's song notes */
 .title-screen__headphones {
 	color: #eef0f8;
 }
@@ -233,7 +227,7 @@
 	height: 32px;
 }
 
-/* Everything else waits for Start, then fades in */
+/* The rest of the UI stays hidden until Start */
 .menu-toggle,
 .song-book-toggle,
 .about-button,
@@ -290,17 +284,13 @@
 	}
 }
 
-/* Wide enough for corners: the middle is the title's, and what is said to the
-   player goes where the experience's own buttons and signature will be — the
-   controls bottom left, the sound hint bottom right. Stacked in one column
-   they read as a block of credits. */
+/* Wide screens: controls bottom left, sound hint bottom right */
 @media (min-width: 760px) {
 	.title-screen__controls,
 	.title-screen__sound {
 		position: absolute;
-		/* Auto placement, so the offsets are measured from the screen's own
-		   box and not from the grid row these would have taken. That box is
-		   the padding box, so the screen's padding is repeated here. */
+		/* Out of the grid rows, so the offsets are relative to the screen's
+		   padding box: the screen's padding is repeated in them */
 		grid-row: auto;
 		bottom: calc(28px + env(safe-area-inset-bottom));
 	}
@@ -338,7 +328,7 @@
 
 /* Touch screens: after the rules they override */
 @media (hover: none) and (pointer: coarse) {
-	/* The A and C buttons are on screen down there: keys mean nothing here */
+	/* The touch controls replace the keys */
 	.title-screen__controls {
 		display: none;
 	}

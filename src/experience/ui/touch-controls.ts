@@ -30,12 +30,9 @@ const TEMPLATE = /* html */ `
 
 const inputId = (pointerId: number) => `touch:${pointerId}`;
 
-// On-screen ocarina buttons for touch screens (shown by CSS only there), pixel
-// buttons in the N64 colors: A under the left thumb, the C buttons under the
-// right, laid out like arrow keys. They play through the keyboard like keys
-// do, so locks, songs and the sampler behave the same. A finger can slide
-// from one button to another to play legato, and several fingers can hold
-// buttons at once.
+// On-screen ocarina buttons, shown on touch screens only. They press keys on
+// the Keyboard like physical keys do, so locks and songs work the same. A
+// finger can slide between buttons, and several can be held at once.
 export default class TouchControls {
 	private readonly root: HTMLElement;
 	private readonly buttons: Record<OcarinaButton, HTMLElement>;
@@ -75,7 +72,7 @@ export default class TouchControls {
 		on("touchend", (e) => e.preventDefault(), { passive: false });
 
 		this.unsubscribes = [
-			// Pressed look follows what the keyboard holds, whatever the input
+			// Also shows presses from the physical keys
 			listen(keyboard.emitter, "noteDown", (button) => {
 				this.buttons[button].classList.add("is-pressed");
 				if (this.fingers.size > 0) navigator.vibrate?.(HAPTIC_MS);
@@ -83,8 +80,7 @@ export default class TouchControls {
 			listen(keyboard.emitter, "noteUp", (button) => {
 				this.buttons[button].classList.remove("is-pressed");
 			}),
-			// Greyed out while the keyboard ignores input, e.g. from a recognized
-			// song until its replay has faded
+			// Greyed out while the keyboard is locked, e.g. during a song replay
 			listen(keyboard.emitter, "lockChange", (locked) => {
 				this.root.classList.toggle("is-disabled", locked);
 				for (const button of Object.values(this.buttons)) {

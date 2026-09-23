@@ -104,8 +104,7 @@
 	rotate: -90deg;
 }
 
-/* Disabled while a recognized song plays back: greyed out like an item you
-   can't use in the game's menus */
+/* Greyed out while the keyboard is locked, e.g. during a song replay */
 .touch-controls.is-disabled .pixel-button svg {
 	opacity: 0.55;
 	filter: grayscale(1) brightness(0.8);

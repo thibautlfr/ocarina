@@ -1,13 +1,10 @@
-// Shared by the menus (settings, song book): keys, sounds, N64 icons and the
-// dialog behavior itself
-
 import Experience from "../experience.ts";
 import { hasModifier } from "../input/keyboard.ts";
 import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
 import { query, queryAll, trackHover } from "./dom.ts";
 import closeIcon from "./pixel/buttons/close.svg?raw";
 
-// Placed in each menu's dialog, over the corner button that opened it
+// Sits in the corner, over the button that opened the menu
 export const CLOSE_BUTTON = /* html */ `
 <button class="pixel-button menu__close" type="button" aria-label="Close" title="Close (Esc)">
 	${closeIcon}
@@ -15,7 +12,7 @@ export const CLOSE_BUTTON = /* html */ `
 
 export type MenuAction = "up" | "down" | "left" | "right" | "confirm" | "back";
 
-// Same physical keys as the ocarina: the C buttons move the cursor, A confirms
+// The ocarina keys: the C buttons move the cursor, A confirms
 export const MENU_KEYS: Record<string, MenuAction> = {
 	ArrowUp: "up",
 	KeyW: "up",
@@ -32,7 +29,7 @@ export const MENU_KEYS: Record<string, MenuAction> = {
 	Backspace: "back",
 };
 
-// Resource name of each menu sound, and how loud it plays
+// Volume of each menu sound, by resource name
 const MENU_SOUND_VOLUME = {
 	menuOpen: 0.55,
 	menuClose: 0.55,
@@ -40,9 +37,7 @@ const MENU_SOUND_VOLUME = {
 } as const;
 type MenuSound = keyof typeof MENU_SOUND_VOLUME;
 
-// Opening/closing a dialog, or clicking or confirming something in it. Silent
-// until the sampler exists (i.e. resources are ready), which in practice is
-// always true by the time a menu can be opened.
+// Silent until the sampler exists, i.e. until resources are loaded
 export const playMenuSound = (name: MenuSound) => {
 	const { world, resources } = Experience.getInstance();
 	const sampler = world.sampler;
@@ -62,22 +57,20 @@ const N64_CLASSES: Record<OcarinaButton, string> = {
 	CUp: "n64--c",
 };
 
-// Round N64 button icon: A blue with its letter, C yellow with an arrow
+// Round N64 button: blue A, or yellow C with an arrow
 export const n64Icon = (button: OcarinaButton, label = BUTTON_LABELS[button]) =>
 	`<span class="n64 ${N64_CLASSES[button]}" role="img" aria-label="${label}">${button === "A" ? "A" : ""}</span>`;
 
-// A full-screen <dialog> opened by a corner toggle and closed by the close
-// button in the same corner, Esc/Backspace or a click outside the panel. Its
-// slabs with a `data-row` take a golden cursor, moved by the ocarina keys or
-// the mouse. The ocarina stays silent while it's open.
+// A full-screen <dialog> with a cursor over its `data-row` slabs, driven by
+// the ocarina keys or the mouse. It closes with its close button, Esc,
+// Backspace or a click outside the panel. The keyboard is locked while open.
 export default abstract class Menu {
 	protected readonly toggle: HTMLButtonElement;
-	// Every button that opens the menu: the about has two
 	private readonly toggles: HTMLButtonElement[] = [];
 	protected readonly dialog: HTMLDialogElement;
 	private readonly closeButton: HTMLButtonElement;
 	protected readonly rows: HTMLElement[];
-	// Kept between openings, like the game's cursor
+	// Kept between openings
 	protected selectedRow: number;
 	protected readonly listeners = new AbortController();
 
@@ -98,10 +91,8 @@ export default abstract class Menu {
 		this.closeButton.addEventListener("click", () => dialog.close(), {
 			signal,
 		});
-		// Both buttons sit in the same corner: after a click, the other one shows
-		// up under the cursor. It only looks pushed once the pointer moves on it.
 		trackHover(this.closeButton, signal);
-		// The dialog covers the screen: a click outside the panel lands on it
+		// The dialog covers the screen, so a click outside the panel targets it
 		dialog.addEventListener(
 			"click",
 			(e) => {
@@ -126,14 +117,15 @@ export default abstract class Menu {
 		});
 	}
 
-	// One more way in: a menu worth finding can be opened from several buttons
+	// Another button that opens the menu
 	protected addToggle(button: HTMLButtonElement) {
 		this.toggles.push(button);
 		const { signal } = this.listeners;
 		button.addEventListener(
 			"click",
 			() => {
-				// The dialog gives focus back on close: Space would then reopen it
+				// Otherwise the dialog gives focus back to it on close, and Space
+				// would reopen the menu
 				button.blur();
 				this.open();
 			},
@@ -163,7 +155,6 @@ export default abstract class Menu {
 		return this.rows[this.selectedRow].dataset.row;
 	}
 
-	// Moving the cursor is silent: only clicks and confirms play the select sound
 	protected selectRow(index: number, focus = true) {
 		const count = this.rows.length;
 		this.selectedRow = (index + count) % count;
@@ -177,12 +168,13 @@ export default abstract class Menu {
 		}
 	}
 
-	// Every key but back, which closes the menu
+	// "back" is handled here: it closes the menu
 	protected abstract handleAction(action: Exclude<MenuAction, "back">): void;
 
 	protected onClose() {}
 
-	// The corner button that shows up next waits for the pointer to move
+	// The toggle and the close button swap places in the same corner: the one
+	// appearing under the cursor shouldn't look hovered until the pointer moves
 	private resetHover() {
 		for (const toggle of this.toggles) toggle.classList.remove("is-hovered");
 		this.closeButton.classList.remove("is-hovered");
@@ -192,11 +184,11 @@ export default abstract class Menu {
 		if (hasModifier(e)) return;
 		const action = MENU_KEYS[e.code];
 		if (!action) return;
-		// Let the Close button be clicked natively
+		// Let the close button handle its own click
 		if (action === "confirm" && e.target === this.closeButton) return;
 
 		e.preventDefault();
-		// Otherwise the window's Esc would reopen the settings menu this key closed
+		// Otherwise the settings menu's window listener reopens it on Esc
 		e.stopPropagation();
 		if (e.repeat && (action === "confirm" || action === "back")) return;
 
@@ -209,7 +201,7 @@ export default abstract class Menu {
 		this.resetHover();
 		this.onClose();
 		Experience.getInstance().keyboard.unlock(this);
-		// Focus goes back to the button that opened the menu: Space would reopen it
+		// Focus goes back to the toggle, where Space would reopen the menu
 		if (document.activeElement instanceof HTMLElement) {
 			document.activeElement.blur();
 		}

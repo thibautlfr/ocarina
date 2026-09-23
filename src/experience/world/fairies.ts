@@ -45,8 +45,8 @@ const TURN_SPEED = 5;
 // Clamped so a background tab doesn't send fairies flying on return
 const MAX_DELTA = 0.05;
 
-// Every song learned: the fairies leave their wandering, gather in a ring
-// around the ocarina and spiral up to the Triforce, glowing brighter
+// Celebration: the fairies gather in a ring around the ocarina and spiral up,
+// glowing brighter. Duration in seconds.
 const CELEBRATE_TIME = 6;
 // Turns around the ocarina, ring radius at the start and at the tightest,
 // and how high they end up above it, in world units
@@ -55,8 +55,7 @@ const CELEBRATE_RADIUS = [1.4, 0.7] as const;
 const CELEBRATE_RISE = 0.6;
 // How much brighter they burn at the peak of the celebration
 const CELEBRATE_GLOW = 2.4;
-// How much faster they fly: the room is wide, and a fairy at the far wall
-// has to reach the ring while it turns
+// Speed multiplier, so a fairy at the far wall reaches the ring in time
 const CELEBRATE_SPEED = 2.2;
 
 type Fairy = {
@@ -355,7 +354,7 @@ export default class Fairies {
 				.sub(fairy.velocity)
 				.multiplyScalar(STEER_STRENGTH);
 		}
-		// The whole point of the celebration is to close in on the ocarina
+		// The celebration ring is inside the avoid radius
 		if (!celebrating)
 			this.repel(fairy, this.avoidOcarina, OCARINA_AVOID_RADIUS);
 		this.repel(fairy, camera, CAMERA_AVOID_RADIUS);
@@ -405,14 +404,12 @@ export default class Fairies {
 		fairy.light.intensity = params.light * twinkle * flare;
 	}
 
-	// Every song learned: the fairies gather in a ring around the ocarina and
-	// spiral up, brighter, then go back to wandering
 	celebrate() {
 		this.celebrateFor = CELEBRATE_TIME;
 	}
 
-	// Where a fairy flies while the celebration lasts: its own place on a ring
-	// that turns around the ocarina, closes in, then opens back up as it rises
+	// The fairy's place on a ring that turns around the ocarina, tightens, then
+	// widens again as it rises
 	private celebrateTarget(fairy: Fairy) {
 		const phase = this.celebration;
 		const angle =

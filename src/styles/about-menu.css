@@ -1,7 +1,6 @@
 /* About: who made the experience, their links, and the credits */
 
-/* Signature, in the corner opposite the game's buttons: small and dimmed so it
-   stays out of the scene, gold under the pointer. */
+/* The signature, bottom right, dimmed until hovered */
 .about-toggle {
 	--corner: 9px;
 	--thickness: 4px;
@@ -21,8 +20,8 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-/* Dimmed on its own element: the title screen fades the button itself in, and
-   this must not fade with it but snap, like every pixel element */
+/* Dimmed on the label: the button's own opacity has a transition (see
+   title-screen.css), and hover should apply instantly */
 .about-toggle__label {
 	opacity: 0.55;
 }
@@ -199,7 +198,7 @@
 		bottom: auto;
 	}
 
-	/* Under the song book, the game's buttons running down the top left */
+	/* Under the song book button */
 	.about-button {
 		top: calc(
 			var(--corner-margin) +

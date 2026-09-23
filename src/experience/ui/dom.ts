@@ -21,7 +21,6 @@ export const fragment = (html: string): DocumentFragment => {
 	return template.content;
 };
 
-// A phone or a tablet: a finger, no pointer to hover with
 export const isTouchScreen = () =>
 	window.matchMedia("(hover: none) and (pointer: coarse)").matches;
 
@@ -29,8 +28,8 @@ export const isTouchScreen = () =>
 export const closest = (target: EventTarget | null, selector: string) =>
 	target instanceof Element ? target.closest<HTMLElement>(selector) : null;
 
-// Hover is a class set on pointermove, not :hover: a corner button showing up
-// under a still cursor (after a click swaps them) mustn't look pushed
+// .is-hovered, set on pointermove: unlike :hover, it doesn't match an element
+// that appears under a cursor that hasn't moved
 export const trackHover = (button: HTMLElement, signal: AbortSignal) => {
 	button.addEventListener(
 		"pointermove",

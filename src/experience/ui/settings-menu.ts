@@ -87,15 +87,15 @@ const TEMPLATE = /* html */ `
 </dialog>
 `;
 
-// The settings menu, styled after Ocarina of Time's file select: stone slabs
-// and a golden cursor. Opens with Esc (the Start button) or the corner button.
+// Volume, song recognition, erasing progress, and the controls. Opens with Esc
+// or its corner button.
 export default class SettingsMenu extends Menu {
 	private readonly volume: HTMLElement;
 	private readonly volumeBars: HTMLElement[];
 	private readonly recognitionSwitch: HTMLButtonElement;
 	private readonly progressLabel: HTMLElement;
 	private readonly eraseButton: HTMLButtonElement;
-	// Erasing the songs learned asks first, like erasing a file: Yes or No
+	// The answer being picked while erasing asks for confirmation
 	private erase: "yes" | "no" | null = null;
 	private lastVolumeSound = 0;
 	private readonly unsubscribes: (() => void)[];
@@ -169,7 +169,6 @@ export default class SettingsMenu extends Menu {
 		this.cancelErase();
 	}
 
-	// Esc is the Start button
 	private handleWindowKeydown = (e: KeyboardEvent) => {
 		if (e.code !== "Escape" || e.repeat || this.dialog.open) return;
 		if (e.target instanceof HTMLElement && e.target.closest("input, textarea"))
@@ -255,8 +254,7 @@ export default class SettingsMenu extends Menu {
 		this.render();
 	}
 
-	// The select sound, played at the new volume so it can be heard, from a
-	// click or ◀ ▶ alike
+	// Played at the new volume, throttled while the level changes quickly
 	private playVolumeSound() {
 		const now = performance.now();
 		if (now - this.lastVolumeSound < VOLUME_SOUND_INTERVAL) return;

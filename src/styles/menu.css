@@ -70,7 +70,7 @@
 	}
 }
 
-/* Big lettering straight on the scene, gold like the menu cursor */
+/* Big gold title, straight on the scene */
 .menu__title {
 	margin: 0;
 	color: var(--oot-gold);
@@ -218,7 +218,7 @@
 	opacity: 0.7;
 }
 
-/* Closes the menu from the corner where its toggle sits */
+/* Over the settings button's corner */
 .menu__close {
 	position: fixed;
 	bottom: var(--corner-margin);
