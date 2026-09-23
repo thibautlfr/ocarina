@@ -58,10 +58,6 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-.toast__share[hidden] {
-	display: none;
-}
-
 .toast__share.is-copied {
 	color: var(--oot-gold);
 }
