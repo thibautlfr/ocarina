@@ -7,9 +7,9 @@ import {
 	schedule,
 } from "../audio/ocarina-sampler.ts";
 import Experience from "../experience.ts";
-import { noteDurations, type Song, songs } from "../songs.ts";
+import type { OcarinaButton } from "../ocarina-buttons.ts";
+import { noteDurations, type Song, songs } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
-import type { OcarinaButton } from "../utils/keyboard.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
 import Menu, {
 	CLOSE_BUTTON,

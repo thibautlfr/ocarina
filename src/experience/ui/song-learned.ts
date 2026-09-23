@@ -3,7 +3,7 @@ import "../../styles/toast.css";
 import "../../styles/song-note.css";
 import "../../styles/song-learned.css";
 import Experience from "../experience.ts";
-import type { Song } from "../songs.ts";
+import type { Song } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
 import { fragment, query } from "./dom.ts";
 import songNoteIcon from "./pixel/icons/song-note.svg?raw";

@@ -3,8 +3,8 @@ import * as THREE from "three";
 import type { GLTF } from "three/addons";
 import type OcarinaSampler from "../audio/ocarina-sampler.ts";
 import Experience from "../experience.ts";
+import type { OcarinaButton } from "../ocarina-buttons.ts";
 import { listen } from "../utils/events.ts";
-import type { OcarinaButton } from "../utils/keyboard.ts";
 
 // Float animation: a slow up and down bob, no rotation
 const FLOAT_SPEED = 1.5;

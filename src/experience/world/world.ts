@@ -3,8 +3,8 @@ import OcarinaSampler, {
 	type ScheduledNote,
 	schedule,
 } from "../audio/ocarina-sampler.ts";
-import SongPlayback from "../audio/song-playback.ts";
 import Experience from "../experience.ts";
+import SongPlayback from "../songs/song-playback.ts";
 import Fairies from "./fairies.ts";
 import LinksHouse from "./links-house.ts";
 import Ocarina from "./ocarina.ts";

@@ -2,7 +2,7 @@ import "../../styles/menu.css";
 import "../../styles/toast.css";
 import "../../styles/completion.css";
 import Experience from "../experience.ts";
-import { songs } from "../songs.ts";
+import { songs } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
 import { fragment, query } from "./dom.ts";
 import triforceIcon from "./pixel/icons/triforce.svg?raw";

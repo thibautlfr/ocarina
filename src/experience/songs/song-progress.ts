@@ -1,8 +1,8 @@
 import mitt from "mitt";
 import Experience from "../experience.ts";
-import { type Song, songs } from "../songs.ts";
-import { listen } from "./events.ts";
-import { loadJson, saveJson } from "./storage.ts";
+import { listen } from "../utils/events.ts";
+import { loadJson, saveJson } from "../utils/storage.ts";
+import { type Song, songs } from "./songs.ts";
 
 type SongProgressEvents = {
 	// A song played for the first time

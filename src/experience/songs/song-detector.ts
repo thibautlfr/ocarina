@@ -1,8 +1,8 @@
 import mitt from "mitt";
 import Experience from "../experience.ts";
-import { type Song, songs } from "../songs.ts";
-import { listen } from "./events.ts";
-import type { OcarinaButton } from "./keyboard.ts";
+import type { OcarinaButton } from "../ocarina-buttons.ts";
+import { listen } from "../utils/events.ts";
+import { type Song, songs } from "./songs.ts";
 
 type SongDetectorEvents = {
 	songPlayed: Song;

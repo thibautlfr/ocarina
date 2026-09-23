@@ -1,6 +1,6 @@
 import mitt from "mitt";
-import Experience from "../experience.ts";
-import { loadJson, saveJson } from "./storage.ts";
+import Experience from "./experience.ts";
+import { loadJson, saveJson } from "./utils/storage.ts";
 
 // User preferences, persisted in localStorage. Read them from `values` and
 // write them with `set()` so listeners and storage stay in sync.

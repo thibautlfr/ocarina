@@ -1,9 +1,9 @@
 import "../../styles/menu.css";
 import "../../styles/settings-menu.css";
 import Experience from "../experience.ts";
-import { songs } from "../songs.ts";
+import type { OcarinaButton } from "../ocarina-buttons.ts";
+import { songs } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
-import type { OcarinaButton } from "../utils/keyboard.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
 import Menu, {
 	CLOSE_BUTTON,

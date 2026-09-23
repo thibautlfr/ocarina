@@ -2,11 +2,8 @@
 // dialog behavior itself
 
 import Experience from "../experience.ts";
-import {
-	BUTTON_LABELS,
-	hasModifier,
-	type OcarinaButton,
-} from "../utils/keyboard.ts";
+import { hasModifier } from "../input/keyboard.ts";
+import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
 import { query, queryAll, trackHover } from "./dom.ts";
 import closeIcon from "./pixel/buttons/close.svg?raw";
 

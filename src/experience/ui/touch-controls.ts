@@ -1,7 +1,7 @@
 import "../../styles/touch-controls.css";
 import Experience from "../experience.ts";
+import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
 import { listen } from "../utils/events.ts";
-import { BUTTON_LABELS, type OcarinaButton } from "../utils/keyboard.ts";
 import { fragment, query, queryAll } from "./dom.ts";
 import aButton from "./pixel/buttons/a.svg?raw";
 import arrowButton from "./pixel/buttons/arrow.svg?raw";

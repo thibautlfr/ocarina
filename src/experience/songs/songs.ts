@@ -1,4 +1,4 @@
-import type { OcarinaButton } from "./utils/keyboard.ts";
+import type { OcarinaButton } from "../ocarina-buttons.ts";
 
 export interface SongNote {
 	readonly button: OcarinaButton;

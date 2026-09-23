@@ -1,8 +1,8 @@
+import type OcarinaSampler from "../audio/ocarina-sampler.ts";
+import { schedule } from "../audio/ocarina-sampler.ts";
 import Experience from "../experience.ts";
-import { noteDurations, type Song } from "../songs.ts";
 import { listen } from "../utils/events.ts";
-import type OcarinaSampler from "./ocarina-sampler.ts";
-import { schedule } from "./ocarina-sampler.ts";
+import { noteDurations, type Song } from "./songs.ts";
 
 // What happens once a song is recognized: the last note rings out, the jingle
 // plays, then the ocarina replays the song in rhythm. The keyboard stays
