@@ -9,10 +9,8 @@ import xLogoIcon from "./pixel/icons/x-logo.svg?raw";
 
 const AUTHOR = "Thibaut Lefrançois";
 const WEBSITE = "https://thibaut-lefrancois.com";
-// The feedback repository: the code stays private, this is the public door to
-// it. Straight to the issue chooser, which also links the discussions.
-const FEEDBACK =
-	"https://github.com/thibautlfr/ocarina-3d-feedback/issues/new/choose";
+const SOURCE = "https://github.com/thibautlfr/ocarina";
+const FEEDBACK = `${SOURCE}/issues/new`;
 
 const SOCIALS: { name: string; url: string; icon: string }[] = [
 	{ name: "GitHub", url: "https://github.com/thibautlfr", icon: githubIcon },
@@ -24,7 +22,6 @@ const SOCIALS: { name: string; url: string; icon: string }[] = [
 	},
 ];
 
-// What the experience borrows, and from whom (the licenses are in the README)
 const CREDITS: { what: string; who: string; url: string }[] = [
 	{
 		what: "Ocarina model",
@@ -53,23 +50,16 @@ const CREDITS: { what: string; who: string; url: string }[] = [
 	},
 ];
 
-// Opens in a new tab: the experience keeps playing behind. `cursor-frame` is
-// left to the caller: a link sitting among others in a slab takes its own small
-// corners, one filling its slab lets the slab's own corners say it is picked.
-const link = (
-	url: string,
-	content: string,
-	className: string,
-	name: string,
-	label = "",
-) =>
-	`<a class="${className}" href="${url}" target="_blank" rel="noopener"${label ? ` aria-label="${label}" title="${label}"` : ""} data-item data-link="${name}">${content}</a>`;
+// Opens in a new tab so the experience keeps running. Links that fill their
+// slab don't take .cursor-frame: the slab's own cursor shows the selection.
+const link = (url: string, content: string, className: string, label = "") =>
+	`<a class="${className}" href="${url}" target="_blank" rel="noopener"${label ? ` aria-label="${label}" title="${label}"` : ""} data-item>${content}</a>`;
 
 const TEMPLATE = /* html */ `
-<button class="about-toggle cursor-frame oot-text" type="button" title="About" aria-haspopup="dialog" aria-controls="about-menu" data-source="signature">
+<button class="about-toggle cursor-frame oot-text" type="button" title="About" aria-haspopup="dialog" aria-controls="about-menu">
 	<span class="about-toggle__label"><span class="about-toggle__by">by</span> ${AUTHOR}</span>
 </button>
-<button class="pixel-button about-button" type="button" aria-label="About" title="About" aria-haspopup="dialog" aria-controls="about-menu" data-source="button">
+<button class="pixel-button about-button" type="button" aria-label="About" title="About" aria-haspopup="dialog" aria-controls="about-menu">
 	${aboutIcon}
 </button>
 <dialog class="menu about" id="about-menu" aria-labelledby="about-title">
@@ -79,16 +69,19 @@ const TEMPLATE = /* html */ `
 			<li class="slab about__author" data-row="author" data-axis="x">
 				<p class="about__made-by oot-text">
 					<span>Made by</span>
-					${link(WEBSITE, AUTHOR, "about__name cursor-frame", "website")}
+					${link(WEBSITE, AUTHOR, "about__name cursor-frame")}
 				</p>
 				<span class="about__socials">
 					${SOCIALS.map(({ name, url, icon }) =>
-						link(url, icon, "about__social cursor-frame", name, name),
+						link(url, icon, "about__social cursor-frame", name),
 					).join("")}
 				</span>
 			</li>
-			<li class="slab about__feedback" data-row="feedback" data-axis="x">
-				${link(FEEDBACK, "Leave feedback", "about__action oot-text", "feedback")}
+			<li class="slab about__action-row" data-row="source" data-axis="x">
+				${link(SOURCE, "Source code", "about__action oot-text")}
+			</li>
+			<li class="slab about__action-row" data-row="feedback" data-axis="x">
+				${link(FEEDBACK, "Leave feedback", "about__action oot-text")}
 			</li>
 			<li class="slab about__credits" data-row="credits" data-axis="y">
 				<span class="slab__label oot-text" id="about-credits-label">Credits</span>
@@ -99,7 +92,6 @@ const TEMPLATE = /* html */ `
 						url,
 						`<span class="about__what">${what}</span><span class="about__who">${who}</span>`,
 						"about__credit oot-text cursor-frame",
-						what,
 					)}</li>`,
 					).join("")}
 				</ul>
@@ -116,22 +108,17 @@ const TEMPLATE = /* html */ `
 </dialog>
 `;
 
-// Who made the experience, where to follow them, where to say what broke, and
-// the credits for what it borrows. Opened by the gold "i" button next to the
-// game's buttons, or by the signature in the corner opposite them.
-// Every link takes the cursor: the rows laid out in a line (`data-axis` x) go
-// left and right, the credits up and down. The source code isn't linked while
-// the repository is private.
+// Author, source, feedback and credits. Opened by the signature or the "i"
+// button. The cursor moves between links: left/right within rows marked
+// `data-axis="x"`, up/down within the credits.
 export default class AboutMenu extends Menu {
-	// The links and buttons of each row, and the one under the cursor in each
+	// The links of each row, and the selected one in each
 	private readonly items: HTMLElement[][];
 	private readonly selectedItems: number[];
 
 	constructor() {
 		const content = fragment(TEMPLATE);
 		super(query(content, ".about-toggle"), query(content, ".about"));
-		// The signature reads as part of the scene, not as a button: the gold "i"
-		// among the game's buttons is the way in nobody has to guess
 		this.addToggle(query(content, ".about-button"));
 		this.items = this.rows.map((row) => queryAll(row, "[data-item]"));
 		this.selectedItems = this.rows.map(() => 0);

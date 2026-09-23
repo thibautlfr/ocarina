@@ -42,13 +42,8 @@
 	opacity: 0.8;
 }
 
-/* Third of the game's buttons, after the gear and the song book: the About is
-   the page that must be findable, so it doesn't rely on the signature alone.
-   TODO: hidden for now, kept for the day the signature proves too discreet —
-   drop the `display` to bring it back (the `menu opened` event carries which
-   way in was used in `from`). */
+/* Third corner button, after settings and the song book */
 .about-button {
-	display: none;
 	position: fixed;
 	bottom: var(--corner-margin);
 	left: calc(var(--corner-margin) + var(--corner-step) * 2);
@@ -99,12 +94,9 @@
 	height: 45px;
 }
 
-/* The one thing the experience asks back. The whole stone is the button, so it
-   hands its padding to the link and the link fills it, at any width: one thing
-   to aim at, and one cursor to show it — the slab's own golden corners. No
-   small corners of its own, two frames around one link read as two choices.
-   Picked, the gold goes white, like the slab's border. */
-.about__feedback {
+/* A link filling its whole slab: the slab's padding moves to the link so the
+   whole stone is clickable */
+.about__action-row {
 	padding: 0;
 }
 

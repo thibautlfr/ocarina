@@ -1,15 +1,16 @@
-/* "Learn a song": a slab next to the song book's button */
+/* "Learn a song": a slab next to the corner buttons */
 
+/* After the three corner buttons */
 .song-hint {
 	position: fixed;
 	bottom: var(--corner-margin);
-	left: calc(var(--corner-margin) + var(--corner-step) * 2);
+	left: calc(var(--corner-margin) + var(--corner-step) * 3);
 	z-index: 1;
 	flex-wrap: nowrap;
 	justify-content: center;
-	/* Same height as the button next to it */
+	/* Same height as the buttons */
 	min-height: 60px;
-	max-width: calc(100% - var(--corner-margin) * 2 - var(--corner-step) * 2);
+	max-width: calc(100% - var(--corner-margin) * 2 - var(--corner-step) * 3);
 	padding: 6px 18px;
 	font-family: var(--oot-font);
 	font-synthesis: none;

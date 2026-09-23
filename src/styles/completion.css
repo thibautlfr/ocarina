@@ -46,7 +46,7 @@
 		top: calc(
 			var(--corner-margin) +
 			var(--corner-step) *
-			2 +
+			3 +
 			env(safe-area-inset-top)
 		);
 	}
