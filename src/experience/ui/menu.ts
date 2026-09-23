@@ -145,6 +145,10 @@ export default abstract class Menu {
 		trackHover(button, signal);
 	}
 
+	get isOpen(): boolean {
+		return this.dialog.open;
+	}
+
 	open() {
 		if (this.dialog.open) return;
 		playMenuSound("menuOpen");

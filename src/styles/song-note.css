@@ -1,0 +1,55 @@
+/* A song's note, in its color from the games' quest screens */
+
+.song-note {
+	position: relative;
+	display: block;
+}
+
+.song-note--white {
+	color: #eef0f8;
+}
+
+.song-note--green {
+	color: #3fce4a;
+}
+
+.song-note--red {
+	color: #e8432c;
+}
+
+.song-note--blue {
+	color: #3f86f2;
+}
+
+.song-note--orange {
+	color: #f28a1f;
+}
+
+.song-note--purple {
+	color: #a85de6;
+}
+
+.song-note--yellow {
+	color: #f5d63a;
+}
+
+.song-note--pink {
+	color: #f47fc0;
+}
+
+@keyframes song-note-reveal {
+	from {
+		filter: brightness(0.4);
+		scale: 0.3;
+	}
+
+	60% {
+		filter: brightness(2.5);
+		scale: 1.3;
+	}
+
+	to {
+		filter: none;
+		scale: 1;
+	}
+}

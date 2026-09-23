@@ -1,0 +1,68 @@
+/* "You learned …!" (built on .toast). The slab lets the pointer through, so
+   the scene can still be dragged under it. */
+
+.song-learned {
+	gap: 10px;
+	padding: 6px 16px 6px 12px;
+}
+
+.song-learned--share {
+	padding-bottom: 10px;
+}
+
+.song-learned__note {
+	flex: none;
+}
+
+.song-learned__note svg {
+	width: 28px;
+	height: 38px;
+}
+
+.song-learned.is-visible .song-learned__note svg {
+	animation: song-note-reveal 0.5s steps(5) 0.15s backwards;
+}
+
+.song-learned__text {
+	margin: 0;
+	font-size: 24px;
+	line-height: 1;
+	text-wrap: balance;
+}
+
+.song-learned__text strong {
+	color: var(--oot-gold);
+	font-weight: 400;
+}
+
+.song-learned .toast__share {
+	font-size: 22px;
+}
+
+@media (max-width: 480px) {
+	.song-learned__text {
+		font-size: 22px;
+	}
+
+	.song-learned .toast__share {
+		font-size: 20px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.song-learned.is-visible .song-learned__note svg {
+		animation: none;
+	}
+}
+
+@media (hover: none) and (pointer: coarse) {
+	.song-learned {
+		top: calc(var(--corner-margin) + env(safe-area-inset-top));
+	}
+
+	/* One line each, so the slab fits the longest line instead of stretching
+	   around wrapped text */
+	.song-learned__text span {
+		display: block;
+	}
+}

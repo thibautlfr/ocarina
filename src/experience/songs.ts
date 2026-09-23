@@ -6,6 +6,17 @@ export interface SongNote {
 	readonly beats: number;
 }
 
+// The color of the song's note in the games' quest screens
+export type NoteColor =
+	| "white"
+	| "green"
+	| "red"
+	| "blue"
+	| "orange"
+	| "purple"
+	| "yellow"
+	| "pink";
+
 export interface Song {
 	readonly name: string;
 	readonly game: "Ocarina of Time" | "Majora's Mask";
@@ -13,9 +24,10 @@ export interface Song {
 	readonly bpm: number;
 	readonly notes: readonly SongNote[];
 	readonly buttons: readonly OcarinaButton[];
+	readonly color: NoteColor;
 }
 
-// Controller notation: A = A, v = C▼, > = C▶, < = C◀, ^ = C▲ (see SONGS.md)
+// Controller notation: A = A, v = C▼, > = C▶, < = C◀, ^ = C▲
 const NOTATION: Record<string, OcarinaButton> = {
 	A: "A",
 	v: "CDown",
@@ -30,12 +42,20 @@ const song = (
 	game: Song["game"],
 	bpm: number,
 	score: string,
+	color: NoteColor = "white",
 ): Song => {
 	const notes = score.split(" ").map((token) => ({
 		button: NOTATION[token[0]],
 		beats: Number(token.slice(1)),
 	}));
-	return { name, game, bpm, notes, buttons: notes.map((n) => n.button) };
+	return {
+		name,
+		game,
+		bpm,
+		notes,
+		buttons: notes.map((n) => n.button),
+		color,
+	};
 };
 
 // The notes with their duration in seconds, `tempo` multiplying the bpm
@@ -56,18 +76,43 @@ export const songs: Song[] = [
 	song("Sun's Song", "Ocarina of Time", 150, ">.5 v.5 ^1 >.5 v.5 ^2"),
 	song("Song of Time", "Ocarina of Time", 100, ">1 A2 v1 >1 A2 v2"),
 	song("Song of Storms", "Ocarina of Time", 170, "A.5 v.5 ^2 A.5 v.5 ^3"),
-	song("Minuet of Forest", "Ocarina of Time", 130, "A1 ^2 <.5 >.5 <1 >3"),
+	song(
+		"Minuet of Forest",
+		"Ocarina of Time",
+		130,
+		"A1 ^2 <.5 >.5 <1 >3",
+		"green",
+	),
 	song(
 		"Bolero of Fire",
 		"Ocarina of Time",
 		150,
 		"v.5 A.5 v.5 A.5 >.5 v.5 >.5 v2",
+		"red",
 	),
-	song("Serenade of Water", "Ocarina of Time", 110, "A1 v1 >2 >1 <3"),
-	song("Nocturne of Shadow", "Ocarina of Time", 100, "<1 >1 >1 A2 <1 >1 v3"),
-	song("Requiem of Spirit", "Ocarina of Time", 120, "A2 v1 A3 >2 v1 A3"),
-	song("Prelude of Light", "Ocarina of Time", 130, "^1 >.5 ^1 >.5 <.5 ^2.5"),
-	song("Song of Healing", "Majora's Mask", 100, "<1 >1 v2 <1 >1 v3"),
+	song("Serenade of Water", "Ocarina of Time", 110, "A1 v1 >2 >1 <3", "blue"),
+	song(
+		"Nocturne of Shadow",
+		"Ocarina of Time",
+		100,
+		"<1 >1 >1 A2 <1 >1 v3",
+		"purple",
+	),
+	song(
+		"Requiem of Spirit",
+		"Ocarina of Time",
+		120,
+		"A2 v1 A3 >2 v1 A3",
+		"orange",
+	),
+	song(
+		"Prelude of Light",
+		"Ocarina of Time",
+		130,
+		"^1 >.5 ^1 >.5 <.5 ^2.5",
+		"yellow",
+	),
+	song("Song of Healing", "Majora's Mask", 100, "<1 >1 v2 <1 >1 v3", "pink"),
 	song("Song of Soaring", "Majora's Mask", 150, "v.5 <.5 ^1 v.5 <.5 ^2"),
 	song("Inverted Song of Time", "Majora's Mask", 100, "v1 A2 >1 v1 A2 >2"),
 	song("Song of Double Time", "Majora's Mask", 140, ">.5 >1 A.5 A1 v.5 v1.5"),
@@ -76,14 +121,22 @@ export const songs: Song[] = [
 		"Majora's Mask",
 		150,
 		"^.5 <.5 ^.5 <.5 A1 >.5 A2",
+		"green",
 	),
-	song("Goron Lullaby", "Majora's Mask", 90, "A1 >1 <2 A1 >1 <1 >1 A3"),
+	song("Goron Lullaby", "Majora's Mask", 90, "A1 >1 <2 A1 >1 <1 >1 A3", "red"),
 	song(
 		"New Wave Bossa Nova",
 		"Majora's Mask",
 		120,
 		"<1.5 ^.5 <1 >1.5 v.5 <1 >2",
+		"blue",
 	),
-	song("Elegy of Emptiness", "Majora's Mask", 90, ">1 <.5 >.5 v2 >1 ^1 <3"),
+	song(
+		"Elegy of Emptiness",
+		"Majora's Mask",
+		90,
+		">1 <.5 >.5 v2 >1 ^1 <3",
+		"orange",
+	),
 	song("Oath to Order", "Majora's Mask", 110, ">1 v1 A2 v1 >1 ^3"),
 ];
