@@ -15,3 +15,11 @@
 	--corner-margin: 16px;
 	--corner-step: 72px;
 }
+
+/* Stacked down the top left on touch screens, where the buttons' own top and
+   bottom margins already open up the gap */
+@media (hover: none) and (pointer: coarse) {
+	:root {
+		--corner-step: 64px;
+	}
+}
