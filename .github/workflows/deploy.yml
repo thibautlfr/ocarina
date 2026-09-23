@@ -1,0 +1,73 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deploy at a time; let an in-flight run finish before starting the next.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ocarina
+        uses: actions/checkout@v4
+
+      # Grants access to the private ocarina-assets repo for this job only,
+      # via a read-only deploy key on ocarina-assets (see repo secrets).
+      - name: Set up SSH access to ocarina-assets
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.OCARINA_ASSETS_DEPLOY_KEY }}
+
+      - name: Trust github.com host key
+        run: ssh-keyscan github.com >> ~/.ssh/known_hosts
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull assets from ocarina-assets
+        run: pnpm assets
+
+      - name: Build
+        # Served at https://<owner>.github.io/ocarina/ for now — not the
+        # ocarina.thibaut-lefrancois.com custom domain (that stays on ocarina-3d).
+        run: pnpm build
+        env:
+          VITE_BASE_PATH: /ocarina/
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
