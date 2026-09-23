@@ -170,6 +170,9 @@
 		drop-shadow(0 1px 0 var(--oot-gold-shade));
 	opacity: 0;
 	pointer-events: none;
+	/* Its own layer: the pulse animates inset, which would otherwise repaint
+	   everything under the frame on every frame, filtered icons included */
+	will-change: transform;
 }
 
 .slab.is-selected::after,
@@ -177,6 +180,12 @@
 :is(.slab, .cursor-frame):is(.is-hovered, :focus-visible)::after {
 	opacity: 1;
 	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
+}
+
+/* In a menu only the slabs pulse: a smaller cursor inside one just shows its
+   corners */
+.menu .cursor-frame::after {
+	animation: none;
 }
 
 @keyframes cursor-pulse {
