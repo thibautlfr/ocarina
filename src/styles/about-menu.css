@@ -90,7 +90,7 @@
 
 .about__social svg {
 	display: block;
-	height: 45px;
+	height: 41px;
 }
 
 /* A link filling its whole slab: the slab's padding moves to the link so the
@@ -174,7 +174,7 @@
 	}
 
 	.about__social svg {
-		height: 39px;
+		height: 35px;
 	}
 
 	/* Who under what: the longest lines don't fit side by side */

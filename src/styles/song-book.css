@@ -69,7 +69,7 @@
 }
 
 .song-book__shelf svg {
-	height: 57px;
+	height: 52px;
 	width: auto;
 }
 
@@ -152,12 +152,12 @@
 	color: #fff;
 	position: absolute;
 	top: 16px;
-	left: 4px;
+	left: 7px;
 }
 
 .staff__clef svg {
-	width: 42px;
-	height: 108px;
+	width: auto;
+	height: 98px;
 }
 
 .staff__notes {

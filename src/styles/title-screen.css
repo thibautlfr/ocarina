@@ -224,7 +224,7 @@
 
 .title-screen__headphones svg {
 	width: 32px;
-	height: 32px;
+	height: auto;
 }
 
 /* The rest of the UI stays hidden until Start */

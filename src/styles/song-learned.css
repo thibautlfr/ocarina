@@ -15,8 +15,8 @@
 }
 
 .song-learned__note svg {
-	width: 28px;
-	height: 38px;
+	width: auto;
+	height: 35px;
 }
 
 .song-learned.is-visible .song-learned__note svg {
