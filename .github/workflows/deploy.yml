@@ -35,7 +35,10 @@ jobs:
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9
+          # pnpm 9 fails on `pnpm store path` when pnpm-workspace.yaml has no
+          # `packages` field (our root-only config for `allowBuilds`) — fixed
+          # in later majors, so pin to one that matches local tooling.
+          version: 11
 
       - name: Set up Node
         uses: actions/setup-node@v4
