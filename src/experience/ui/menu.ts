@@ -8,6 +8,13 @@ import {
 	type OcarinaButton,
 } from "../utils/keyboard.ts";
 import { query, queryAll, trackHover } from "./dom.ts";
+import closeIcon from "./pixel/buttons/close.svg?raw";
+
+// Placed in each menu's dialog, over the corner button that opened it
+export const CLOSE_BUTTON = /* html */ `
+<button class="pixel-button menu__close" type="button" aria-label="Close" title="Close (Esc)">
+	${closeIcon}
+</button>`;
 
 export type MenuAction = "up" | "down" | "left" | "right" | "confirm" | "back";
 

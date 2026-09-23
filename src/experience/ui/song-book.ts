@@ -10,9 +10,15 @@ import { noteDurations, type Song, songs } from "../songs.ts";
 import { listen } from "../utils/events.ts";
 import type { OcarinaButton } from "../utils/keyboard.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
-import Menu, { type MenuAction, n64Icon, playMenuSound } from "./menu.ts";
-import { CLOSE_BUTTON, SONG_BUTTON } from "./pixel-buttons.ts";
-import { SONG_NOTE_ICON, TREBLE_CLEF_ICON } from "./pixel-icons.ts";
+import Menu, {
+	CLOSE_BUTTON,
+	type MenuAction,
+	n64Icon,
+	playMenuSound,
+} from "./menu.ts";
+import songIcon from "./pixel/buttons/song.svg?raw";
+import songNoteIcon from "./pixel/icons/song-note.svg?raw";
+import trebleClefIcon from "./pixel/icons/treble-clef.svg?raw";
 import { shareOcarina } from "./share.ts";
 
 type Game = Song["game"];
@@ -120,14 +126,14 @@ type Cursor = { shelf: number; note: number };
 
 const TEMPLATE = /* html */ `
 <button class="pixel-button song-book-toggle" type="button" aria-label="Songs" title="Songs" aria-haspopup="dialog" aria-controls="song-book">
-	${SONG_BUTTON}
+	${songIcon}
 	<span class="song-book-toggle__badge" hidden></span>
 </button>
 <button class="slab song-hint" type="button" data-source="hint" aria-haspopup="dialog" aria-controls="song-book">
 	<span class="song-hint__text oot-text">Learn a song</span>
 </button>
 <div class="slab song-learned" role="status" aria-live="polite" aria-atomic="true">
-	<span class="song-note song-learned__note">${SONG_NOTE_ICON}</span>
+	<span class="song-note song-learned__note">${songNoteIcon}</span>
 	<div class="song-learned__body">
 		<p class="song-learned__text oot-text"><span>You learned</span> <span><strong></strong>!</span></p>
 		<button class="song-learned__share cursor-frame oot-text" type="button" data-link="share" hidden>Share this ocarina</button>
@@ -150,15 +156,13 @@ const TEMPLATE = /* html */ `
 				<p class="song-book__name oot-text" aria-live="polite"></p>
 				<div class="staff">
 					<span class="staff__lines"></span>
-					<span class="staff__clef">${TREBLE_CLEF_ICON}</span>
+					<span class="staff__clef">${trebleClefIcon}</span>
 					<ol class="staff__notes"></ol>
 				</div>
 			</li>
 		</ul>
 	</div>
-	<button class="pixel-button pixel-button--close menu__close" type="button" aria-label="Close" title="Close (Esc)">
-		${CLOSE_BUTTON}
-	</button>
+	${CLOSE_BUTTON}
 </dialog>
 `;
 
@@ -409,7 +413,7 @@ export default class SongBook extends Menu {
 				: "";
 			return `
 				<span class="song-note cursor-frame ${noteColorClass(song)}${newClass}"${style} role="option" id="${noteId(shelf, note)}" data-shelf="${shelf}" data-note="${note}">
-					${SONG_NOTE_ICON}
+					${songNoteIcon}
 				</span>`;
 		};
 		this.shelves.innerHTML = this.book

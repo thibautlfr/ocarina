@@ -1,9 +1,11 @@
 import "../../styles/menu.css";
 import "../../styles/about-menu.css";
 import { closest, fragment, query, queryAll } from "./dom.ts";
-import Menu, { type MenuAction, playMenuSound } from "./menu.ts";
-import { ABOUT_BUTTON, CLOSE_BUTTON } from "./pixel-buttons.ts";
-import { GITHUB_ICON, LINKEDIN_ICON, X_LOGO_ICON } from "./pixel-icons.ts";
+import Menu, { CLOSE_BUTTON, type MenuAction, playMenuSound } from "./menu.ts";
+import aboutIcon from "./pixel/buttons/about.svg?raw";
+import githubIcon from "./pixel/icons/github.svg?raw";
+import linkedinIcon from "./pixel/icons/linkedin.svg?raw";
+import xLogoIcon from "./pixel/icons/x-logo.svg?raw";
 
 const AUTHOR = "Thibaut Lefrançois";
 const WEBSITE = "https://thibaut-lefrancois.com";
@@ -13,12 +15,12 @@ const FEEDBACK =
 	"https://github.com/thibautlfr/ocarina-3d-feedback/issues/new/choose";
 
 const SOCIALS: { name: string; url: string; icon: string }[] = [
-	{ name: "GitHub", url: "https://github.com/thibautlfr", icon: GITHUB_ICON },
-	{ name: "X", url: "https://x.com/thibautlfr", icon: X_LOGO_ICON },
+	{ name: "GitHub", url: "https://github.com/thibautlfr", icon: githubIcon },
+	{ name: "X", url: "https://x.com/thibautlfr", icon: xLogoIcon },
 	{
 		name: "LinkedIn",
 		url: "https://www.linkedin.com/in/thibaut-lefrancois/",
-		icon: LINKEDIN_ICON,
+		icon: linkedinIcon,
 	},
 ];
 
@@ -67,8 +69,8 @@ const TEMPLATE = /* html */ `
 <button class="about-toggle cursor-frame oot-text" type="button" title="About" aria-haspopup="dialog" aria-controls="about-menu" data-source="signature">
 	<span class="about-toggle__label"><span class="about-toggle__by">by</span> ${AUTHOR}</span>
 </button>
-<button class="pixel-button pixel-button--about about-button" type="button" aria-label="About" title="About" aria-haspopup="dialog" aria-controls="about-menu" data-source="button">
-	${ABOUT_BUTTON}
+<button class="pixel-button about-button" type="button" aria-label="About" title="About" aria-haspopup="dialog" aria-controls="about-menu" data-source="button">
+	${aboutIcon}
 </button>
 <dialog class="menu about" id="about-menu" aria-labelledby="about-title">
 	<div class="menu__panel">
@@ -110,9 +112,7 @@ const TEMPLATE = /* html */ `
 			</li>
 		</ul>
 	</div>
-	<button class="pixel-button pixel-button--close menu__close" type="button" aria-label="Close" title="Close (Esc)">
-		${CLOSE_BUTTON}
-	</button>
+	${CLOSE_BUTTON}
 </dialog>
 `;
 

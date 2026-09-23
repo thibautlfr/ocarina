@@ -19,9 +19,7 @@
 	-webkit-touch-callout: none;
 }
 
-/* Left thumb, resting on the same line as the bottom row of C buttons (left,
-   down, right): the A button is drawn 8px above its touch area's bottom, the
-   C buttons 3px above their cell's */
+/* Left thumb, lined up with the bottom row of C buttons */
 .touch-controls__pad--a {
 	bottom: calc(35px + env(safe-area-inset-bottom));
 	left: calc(20px + env(safe-area-inset-left));
@@ -48,8 +46,7 @@
 	height: 96px;
 }
 
-/* The corner pixel buttons, in the N64 colors: cells of 3px for the C
-   buttons, 4px for A. Only the touch area takes the finger. */
+/* Only the touch area takes the finger */
 .touch-controls .pixel-button {
 	display: block;
 	pointer-events: none;
@@ -68,9 +65,9 @@
 		filter 0.2s ease;
 }
 
-/* Held: the cap sinks into its base. It snaps, no easing. */
+/* Same offset as a pressed .pixel-button (ui.css), no easing */
 .touch-controls__button.is-pressed .pixel-button__cap {
-	transform: translateY(3px);
+	transform: translateY(15px);
 }
 
 .touch-controls__button[data-button="CUp"] {
@@ -87,6 +84,24 @@
 
 .touch-controls__button[data-button="CRight"] {
 	grid-area: 2 / 3;
+}
+
+/* arrow.svg points down */
+.touch-controls .pixel-button__glyph {
+	transform-box: fill-box;
+	transform-origin: center;
+}
+
+[data-button="CUp"] .pixel-button__glyph {
+	rotate: 180deg;
+}
+
+[data-button="CLeft"] .pixel-button__glyph {
+	rotate: 90deg;
+}
+
+[data-button="CRight"] .pixel-button__glyph {
+	rotate: -90deg;
 }
 
 /* Disabled while a recognized song plays back: greyed out like an item you
