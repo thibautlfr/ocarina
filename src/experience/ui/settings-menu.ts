@@ -6,7 +6,7 @@ import { listen } from "../utils/events.ts";
 import type { OcarinaButton } from "../utils/keyboard.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
 import Menu, { type MenuAction, n64Icon, playMenuSound } from "./menu.ts";
-import { CROSS, GEAR, pixelButton } from "./pixel-art.ts";
+import { CLOSE_BUTTON, GEAR_BUTTON } from "./pixel-buttons.ts";
 
 // The volume setting goes from 0 to 1 in this many steps
 const VOLUME_LEVELS = 5;
@@ -33,7 +33,7 @@ const CONTROLS: { button: OcarinaButton; label?: string; keys: string[] }[] = [
 
 const TEMPLATE = /* html */ `
 <button class="pixel-button menu-toggle" type="button" aria-label="Settings" title="Settings (Esc)" aria-haspopup="dialog" aria-controls="settings-menu">
-	${pixelButton(GEAR, 5, 3)}
+	${GEAR_BUTTON}
 </button>
 <dialog class="menu" id="settings-menu" aria-labelledby="menu-title">
 	<div class="menu__panel">
@@ -79,7 +79,7 @@ const TEMPLATE = /* html */ `
 		</ul>
 	</div>
 	<button class="pixel-button pixel-button--close menu__close" type="button" aria-label="Close" title="Close (Esc)">
-		${pixelButton(CROSS, 6, 4)}
+		${CLOSE_BUTTON}
 	</button>
 </dialog>
 `;

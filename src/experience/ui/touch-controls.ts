@@ -4,22 +4,20 @@ import { listen } from "../utils/events.ts";
 import { BUTTON_LABELS, type OcarinaButton } from "../utils/keyboard.ts";
 import { fragment, query, queryAll } from "./dom.ts";
 import {
-	ARROW_DOWN,
-	ARROW_LEFT,
-	ARROW_RIGHT,
-	ARROW_UP,
-	LETTER_A,
-	pixelButton,
-} from "./pixel-art.ts";
+	A_BUTTON,
+	ARROW_DOWN_BUTTON,
+	ARROW_LEFT_BUTTON,
+	ARROW_RIGHT_BUTTON,
+	ARROW_UP_BUTTON,
+} from "./pixel-buttons.ts";
 
-// Each button's glyph and where it sits on the cap. Arrows are shifted half a
-// cell toward their tip, their base being heavier.
-const DRAWINGS: Record<OcarinaButton, Parameters<typeof pixelButton>> = {
-	A: [LETTER_A, 7, 4],
-	CUp: [ARROW_UP, 5, 5],
-	CLeft: [ARROW_LEFT, 7, 3],
-	CDown: [ARROW_DOWN, 5, 6],
-	CRight: [ARROW_RIGHT, 8, 3],
+// Each button's drawing
+const DRAWINGS: Record<OcarinaButton, string> = {
+	A: A_BUTTON,
+	CUp: ARROW_UP_BUTTON,
+	CLeft: ARROW_LEFT_BUTTON,
+	CDown: ARROW_DOWN_BUTTON,
+	CRight: ARROW_RIGHT_BUTTON,
 };
 
 // In the order of their arrow-key layout: up above left, down, right
@@ -30,7 +28,7 @@ const HAPTIC_MS = 8;
 // The touch area, larger than the pixel button drawn in it (see the CSS)
 const touchButton = (button: OcarinaButton) => `
 <div class="touch-controls__button" role="button" aria-label="${BUTTON_LABELS[button]}" data-button="${button}">
-	<span class="pixel-button pixel-button--${button === "A" ? "a" : "c"}" aria-hidden="true">${pixelButton(...DRAWINGS[button])}</span>
+	<span class="pixel-button pixel-button--${button === "A" ? "a" : "c"}" aria-hidden="true">${DRAWINGS[button]}</span>
 </div>`;
 
 const TEMPLATE = /* html */ `

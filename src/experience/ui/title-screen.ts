@@ -6,7 +6,7 @@ import { listen } from "../utils/events.ts";
 import { hasModifier, type OcarinaButton } from "../utils/keyboard.ts";
 import { fragment, query } from "./dom.ts";
 import { MENU_KEYS, n64Icon } from "./menu.ts";
-import { HEADPHONES, pixelIcon, TRIFORCE } from "./pixel-art.ts";
+import { HEADPHONES_ICON, TRIFORCE_ICON } from "./pixel-icons.ts";
 
 // Keys that press Start: A, Enter, and Esc, the Start button in the menus
 const START_KEYS = new Set(["Space", "Enter", "NumpadEnter", "Escape"]);
@@ -38,7 +38,7 @@ const CONTROLS: { button: OcarinaButton; label?: string; key: string }[] = [
 const TEMPLATE = /* html */ `
 <div class="title-screen" role="dialog" aria-modal="true" aria-labelledby="title-screen-title">
 	<div class="title-screen__logo">
-		<span class="title-screen__triforce">${pixelIcon(TRIFORCE)}</span>
+		<span class="title-screen__triforce">${TRIFORCE_ICON}</span>
 		<h1 class="menu__title title-screen__title" id="title-screen-title">Ocarina</h1>
 		<p class="title-screen__subtitle oot-text">Songs of Hyrule</p>
 	</div>
@@ -64,7 +64,7 @@ const TEMPLATE = /* html */ `
 		</ul>
 	</div>
 	<p class="title-screen__sound oot-text">
-		<span class="title-screen__headphones">${pixelIcon(HEADPHONES)}</span>
+		<span class="title-screen__headphones">${HEADPHONES_ICON}</span>
 		<span>Sound on</span>
 	</p>
 </div>

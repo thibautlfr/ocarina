@@ -132,72 +132,51 @@
 	--thickness: 4px;
 	--cursor-inset: -6px;
 	--cursor-pulse: -3px;
-	--edge: var(--oot-ink);
 	position: relative;
 	display: block;
 	cursor: pointer;
 }
 
-/* 14×19 cells at 3px each */
 .song-note svg {
-	width: 42px;
 	height: 57px;
+	width: auto;
 }
 
 .song-note--white {
-	--face: #eef0f8;
-	--light: #ffffff;
-	--shade: #a9adc4;
+	color: #eef0f8;
 }
 
 .song-note--green {
-	--face: #3fce4a;
-	--light: #a8f79a;
-	--shade: #16822b;
+	color: #3fce4a;
 }
 
 .song-note--red {
-	--face: #e8432c;
-	--light: #ff9e7a;
-	--shade: #9a1f14;
+	color: #e8432c;
 }
 
 .song-note--blue {
-	--face: #3f86f2;
-	--light: #9cc8ff;
-	--shade: #1d4ea6;
+	color: #3f86f2;
 }
 
 .song-note--orange {
-	--face: #f28a1f;
-	--light: #ffc877;
-	--shade: #a8520a;
+	color: #f28a1f;
 }
 
 .song-note--purple {
-	--face: #a85de6;
-	--light: #d9adff;
-	--shade: #6a2da3;
+	color: #a85de6;
 }
 
 .song-note--yellow {
-	--face: #f5d63a;
-	--light: #fff4a3;
-	--shade: #b08e0c;
+	color: #f5d63a;
 }
 
 .song-note--pink {
-	--face: #f47fc0;
-	--light: #ffc7e6;
-	--shade: #b04585;
+	color: #f47fc0;
 }
 
 /* Not learned yet: an empty slot carved in the stone */
 .song-note.is-locked {
-	--face: #6b71a6;
-	--light: #5a6094;
-	--shade: #7c83ba;
-	--edge: #3a3e66;
+	color: #6b71a6;
 }
 
 /* Learned since the book was last opened: pops out of its slot */
@@ -288,10 +267,7 @@
 
 /* Its spiral centered on the G line */
 .staff__clef {
-	--face: #fff;
-	--light: #fff;
-	--shade: #c9cbe0;
-	--edge: var(--oot-ink);
+	color: #fff;
 	position: absolute;
 	top: 16px;
 	left: 4px;

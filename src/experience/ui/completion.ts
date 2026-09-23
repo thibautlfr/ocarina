@@ -4,7 +4,7 @@ import Experience from "../experience.ts";
 import { songs } from "../songs.ts";
 import { listen } from "../utils/events.ts";
 import { fragment, query, trackHover } from "./dom.ts";
-import { pixelIcon, TRIFORCE } from "./pixel-art.ts";
+import { TRIFORCE_ICON } from "./pixel-icons.ts";
 import { shareOcarina } from "./share.ts";
 
 // The banner comes in this long before the end of the celebration, in
@@ -20,7 +20,7 @@ const COPIED_DURATION = 2400;
 
 const TEMPLATE = /* html */ `
 <div class="slab completion" role="status" aria-live="polite" aria-atomic="true">
-	<span class="completion__triforce">${pixelIcon(TRIFORCE)}</span>
+	<span class="completion__triforce">${TRIFORCE_ICON}</span>
 	<div class="completion__body">
 		<p class="completion__text oot-text">All ${songs.length} songs learned!</p>
 		<button class="completion__share cursor-frame oot-text" type="button" data-link="share">Share this ocarina</button>

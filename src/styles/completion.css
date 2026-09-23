@@ -38,10 +38,7 @@
 
 /* Gold, like the one on the title screen and the one in the scene */
 .completion__triforce {
-	--face: var(--oot-gold);
-	--light: #fff3a8;
-	--shade: #c98a00;
-	--edge: var(--oot-ink);
+	color: var(--oot-gold);
 	flex: none;
 }
 

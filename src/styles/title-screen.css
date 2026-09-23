@@ -110,12 +110,8 @@
 	align-items: center;
 }
 
-/* 4px per cell: 34 × 31 cells, outline included */
 .title-screen__triforce {
-	--face: var(--oot-gold);
-	--light: #fff3a8;
-	--shade: #c98a00;
-	--edge: var(--oot-ink);
+	color: var(--oot-gold);
 	margin-bottom: 18px;
 }
 
@@ -227,12 +223,9 @@
 	opacity: 0.7;
 }
 
-/* 2px per cell: 16 × 16 cells, white like the game's song notes */
+/* White like the game's song notes */
 .title-screen__headphones {
-	--face: #eef0f8;
-	--light: #fff;
-	--shade: #9ea3c4;
-	--edge: var(--oot-ink);
+	color: #eef0f8;
 }
 
 .title-screen__headphones svg {

@@ -101,14 +101,16 @@
 	--turn: 270deg;
 }
 
-/* Pixel art drawn by pixelButton() and pixelIcon(): square cells, no smoothing */
+/* Pixel art: static SVGs exported from Figma (see /styles at the repo root,
+   loaded through pixel-buttons.ts and pixel-icons.ts), square cells, no
+   smoothing */
 .pixel-art {
 	display: block;
 	shape-rendering: crispEdges;
 }
 
-/* Chunky pixel button, drawn in SVG from a pixel grid (pixel-art.ts): a cap
-   resting on a thick base. Hovering pushes the cap down, pressing sinks it. */
+/* Chunky pixel button (pixel-buttons.ts): a cap resting on a thick base.
+   Hovering pushes the cap down, pressing sinks it further. */
 .pixel-button {
 	width: 60px;
 	height: 60px;
@@ -126,16 +128,17 @@
 	overflow: visible;
 }
 
-/* In SVG user units: one pixel of the grid. .is-hovered rather than :hover,
-   which would match a button appearing under a cursor that hasn't moved. */
+/* In the SVG's own user units (viewBox 0 0 136 132). .is-hovered rather than
+   :hover, which would match a button appearing under a cursor that hasn't
+   moved. */
 .pixel-button.is-hovered .pixel-button__cap,
 .pixel-button:focus-visible .pixel-button__cap {
-	transform: translateY(2px);
+	transform: translateY(7px);
 }
 
 .pixel-button:active .pixel-button__cap,
 .pixel-button.is-pressed .pixel-button__cap {
-	transform: translateY(3px);
+	transform: translateY(15px);
 }
 
 .pixel-button:focus-visible {

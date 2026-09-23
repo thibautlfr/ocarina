@@ -96,10 +96,7 @@
 	--thickness: 4px;
 	--cursor-inset: -7px;
 	--cursor-pulse: -4px;
-	--face: #fff;
-	--light: #fff;
-	--shade: #d6d8ec;
-	--edge: var(--oot-ink);
+	color: #fff;
 	display: block;
 }
 
