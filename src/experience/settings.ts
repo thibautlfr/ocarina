@@ -15,7 +15,7 @@ type SettingsEvents = {
 	change: { key: keyof SettingsValues; values: SettingsValues };
 };
 
-const STORAGE_KEY = "ocarina-3d:settings";
+const STORAGE_KEY = "ocarina:settings";
 
 const DEFAULTS: SettingsValues = {
 	volume: 0.8,
