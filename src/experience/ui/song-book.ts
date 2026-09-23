@@ -18,9 +18,8 @@ import Menu, {
 	playMenuSound,
 } from "./menu.ts";
 import eighthNoteGlyph from "./pixel/glyphs/eighth-note.svg?raw";
-import songNoteIcon from "./pixel/icons/song-note.svg?raw";
-import trebleClefIcon from "./pixel/icons/treble-clef.svg?raw";
 import { pixelButton } from "./pixel-button.ts";
+import { songNoteIcon, trebleClefIcon } from "./pixel-icons.ts";
 import SongHint from "./song-hint.ts";
 import SongLearned from "./song-learned.ts";
 

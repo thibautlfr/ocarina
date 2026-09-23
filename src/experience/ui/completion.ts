@@ -5,7 +5,7 @@ import Experience from "../experience.ts";
 import { songs } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
 import { fragment, query } from "./dom.ts";
-import triforceIcon from "./pixel/icons/triforce.svg?raw";
+import { triforceIcon } from "./pixel-icons.ts";
 import { ShareButton } from "./share.ts";
 
 // The banner shows up this long before the celebration ends, in seconds

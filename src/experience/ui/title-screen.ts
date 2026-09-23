@@ -7,8 +7,7 @@ import type { OcarinaButton } from "../ocarina-buttons.ts";
 import { listen } from "../utils/events.ts";
 import { fragment, query } from "./dom.ts";
 import { MENU_KEYS, n64Icon } from "./menu.ts";
-import headphonesIcon from "./pixel/icons/headphones.svg?raw";
-import triforceIcon from "./pixel/icons/triforce.svg?raw";
+import { headphonesIcon, triforceIcon } from "./pixel-icons.ts";
 
 const START_KEYS = new Set(["Space", "Enter", "NumpadEnter", "Escape"]);
 // Matches the fade out in title-screen.css, in ms

@@ -3,10 +3,8 @@ import "../../styles/about-menu.css";
 import { closest, fragment, query, queryAll } from "./dom.ts";
 import Menu, { CLOSE_BUTTON, type MenuAction, playMenuSound } from "./menu.ts";
 import infoGlyph from "./pixel/glyphs/info.svg?raw";
-import githubIcon from "./pixel/icons/github.svg?raw";
-import linkedinIcon from "./pixel/icons/linkedin.svg?raw";
-import xLogoIcon from "./pixel/icons/x-logo.svg?raw";
 import { pixelButton } from "./pixel-button.ts";
+import { githubIcon, linkedinIcon, xLogoIcon } from "./pixel-icons.ts";
 
 const AUTHOR = "Thibaut Lefrançois";
 const WEBSITE = "https://thibaut-lefrancois.com";

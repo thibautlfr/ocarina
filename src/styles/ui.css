@@ -105,6 +105,30 @@
 	shape-rendering: crispEdges;
 }
 
+/* The 2px ink outline, a stroke under the icon's shapes (pixel-icons.ts):
+   half of it is covered by the shapes, the other half shows around them */
+.pixel-icon {
+	overflow: visible;
+}
+
+.pixel-icon__outline path {
+	fill: var(--oot-ink);
+	stroke: var(--oot-ink);
+	stroke-width: 4px;
+	stroke-linejoin: miter;
+	vector-effect: non-scaling-stroke;
+}
+
+/* Pixel shading drawn in some icons: the top edges catch the light, the
+   bottom edges fall into shade, both mixed from the icon's color */
+.pixel-icon__light {
+	fill: color-mix(in srgb, currentColor 55%, #fff);
+}
+
+.pixel-icon__shade {
+	fill: color-mix(in srgb, currentColor 62%, #000);
+}
+
 /* A cap resting on a base (pixel-button.ts): hovering pushes the cap down,
    pressing sinks it further */
 .pixel-button {

@@ -1,5 +1,7 @@
-<svg class="pixel-art" width="59" height="50" viewBox="0 0 59 50" aria-hidden="true">
+<svg class="pixel-art pixel-icon" width="59" height="50" viewBox="0 0 59 50" aria-hidden="true">
 <path d="M59 45.4551V50H0V45.4551H59Z" fill="currentColor"/>
 <path fill-rule="evenodd" d="M59 45.4551L45.3848 45.4541V27.2725H40.8457V22.7275H36.3076V18.1816H18.1543V45.4541H13.6152V18.1816H4.53809V45.4541L0 45.4551V0H59V45.4551ZM4.53809 13.6367H13.6152V4.5459H4.53809V13.6367Z" fill="currentColor"/>
 <path d="M31.7695 31.8184H36.3076V45.4541H27.2305V27.2725H31.7695V31.8184Z" fill="currentColor"/>
+<path class="pixel-icon__light" d="M0 0H59V4.545H0Z"/>
+<path class="pixel-icon__shade" d="M0 45.455H59V50H0Z"/>
 </svg>
