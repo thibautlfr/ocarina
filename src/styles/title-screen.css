@@ -113,7 +113,7 @@
 
 .title-screen__triforce svg {
 	width: 136px;
-	height: 124px;
+	height: auto;
 }
 
 .title-screen__title {
@@ -255,7 +255,7 @@
 
 	.title-screen__triforce svg {
 		width: 102px;
-		height: 93px;
+		height: auto;
 	}
 
 	.title-screen__title {
