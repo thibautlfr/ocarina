@@ -95,12 +95,6 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-.completion__share.is-hovered::after,
-.completion__share:focus-visible::after {
-	opacity: 1;
-	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
-}
-
 .completion__share.is-copied {
 	color: var(--oot-gold);
 }
@@ -145,11 +139,6 @@
 	}
 
 	.completion.is-visible .completion__triforce svg {
-		animation: none;
-	}
-
-	.completion__share.is-hovered::after,
-	.completion__share:focus-visible::after {
 		animation: none;
 	}
 }

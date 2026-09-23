@@ -1,6 +1,5 @@
-/* Shared menu look, after Ocarina of Time 3D's file select: full-screen
-   dialog, gold title, stone slabs, golden cursor, choices. Used by the
-   settings menu and the song book. */
+/* Shared look after Ocarina of Time 3D's file select: full-screen dialog,
+   gold title, stone slabs, golden cursor, choices */
 
 /* Full-screen dialog, the panel centered in it. The centering stays on the
    closed state too, or the panel would jump to the corner while fading out. */
@@ -174,7 +173,8 @@
 }
 
 .slab.is-selected::after,
-.cursor-frame.is-selected::after {
+.cursor-frame.is-selected::after,
+:is(.slab, .cursor-frame):is(.is-hovered, :focus-visible)::after {
 	opacity: 1;
 	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
 }
@@ -248,7 +248,8 @@
 	}
 
 	.slab.is-selected::after,
-	.cursor-frame.is-selected::after {
+	.cursor-frame.is-selected::after,
+	:is(.slab, .cursor-frame):is(.is-hovered, :focus-visible)::after {
 		animation: none;
 	}
 }

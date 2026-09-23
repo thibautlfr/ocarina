@@ -73,12 +73,6 @@
 	white-space: nowrap;
 }
 
-.song-hint.is-hovered::after,
-.song-hint:focus-visible::after {
-	opacity: 1;
-	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
-}
-
 /* The book's button pushes itself down, as if asking to be pressed */
 .song-book-toggle.is-nudging .pixel-button__cap {
 	animation: song-hint-press 1.8s ease-in-out infinite;
@@ -411,12 +405,6 @@
 	display: none;
 }
 
-.song-learned__share.is-hovered::after,
-.song-learned__share:focus-visible::after {
-	opacity: 1;
-	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
-}
-
 .song-learned__share.is-copied {
 	color: var(--oot-gold);
 }
@@ -468,11 +456,7 @@
 	.song-note.is-new svg,
 	.song-note.is-new::before,
 	.song-learned.is-visible .song-learned__note svg,
-	.song-book-toggle.is-nudging .pixel-button__cap,
-	.song-hint.is-hovered::after,
-	.song-hint:focus-visible::after,
-	.song-learned__share.is-hovered::after,
-	.song-learned__share:focus-visible::after {
+	.song-book-toggle.is-nudging .pixel-button__cap {
 		animation: none;
 	}
 

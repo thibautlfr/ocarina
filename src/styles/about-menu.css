@@ -37,12 +37,6 @@
 	opacity: 1;
 }
 
-.about-toggle.is-hovered::after,
-.about-toggle:focus-visible::after {
-	opacity: 1;
-	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
-}
-
 .about-toggle__by {
 	font-size: 18px;
 	opacity: 0.8;
