@@ -1,20 +1,19 @@
 import mitt from "mitt";
 import Experience from "../experience.ts";
-import { type Song, songs } from "../songs.ts";
-import { listen } from "./events.ts";
-import { loadJson, saveJson } from "./storage.ts";
+import { listen } from "../utils/events.ts";
+import { loadJson, saveJson } from "../utils/storage.ts";
+import { type Song, songs } from "./songs.ts";
 
 type SongProgressEvents = {
 	// A song played for the first time
 	learn: Song;
-	// The last song was just learned: every song is now known. Emitted once,
-	// right after its `learn`, and never again on a later visit.
+	// Every song is now learned, emitted right after the last one's `learn`
 	complete: undefined;
 	// The learned or unseen songs changed
 	change: undefined;
 };
 
-const STORAGE_KEY = "ocarina-3d:songs";
+const STORAGE_KEY = "ocarina:songs";
 
 const KNOWN = new Set(songs.map((song) => song.name));
 
@@ -29,8 +28,6 @@ export default class SongProgress {
 	readonly emitter = mitt<SongProgressEvents>();
 	private readonly learned: Set<string>;
 	private readonly unseen: Set<string>;
-	// Whether the celebration of every song learned has already played
-	private celebrated: boolean;
 	private readonly unsubscribe: () => void;
 
 	constructor() {
@@ -38,9 +35,6 @@ export default class SongProgress {
 		const stored = loadJson(STORAGE_KEY);
 		this.learned = new Set(songNames(stored.learned));
 		this.unseen = new Set(songNames(stored.unseen));
-		// Players who finished before the celebration existed don't get one out
-		// of nowhere on their next visit
-		this.celebrated = stored.celebrated === true || this.isComplete;
 
 		this.unsubscribe = listen(songDetector.emitter, "songPlayed", this.learn);
 
@@ -76,11 +70,7 @@ export default class SongProgress {
 		this.learned.add(song.name);
 		this.unseen.add(song.name);
 		this.emitter.emit("learn", song);
-		// After the song's own event: the last one is learned, then celebrated
-		if (this.isComplete && !this.celebrated) {
-			this.celebrated = true;
-			this.emitter.emit("complete");
-		}
+		if (this.isComplete) this.emitter.emit("complete");
 		this.save();
 	};
 
@@ -92,16 +82,13 @@ export default class SongProgress {
 	reset() {
 		this.learned.clear();
 		this.unseen.clear();
-		this.celebrated = false;
 		this.save();
 	}
 
-	// Every change is saved, then announced
 	private save() {
 		saveJson(STORAGE_KEY, {
 			learned: [...this.learned],
 			unseen: [...this.unseen],
-			celebrated: this.celebrated,
 		});
 		this.emitter.emit("change");
 	}

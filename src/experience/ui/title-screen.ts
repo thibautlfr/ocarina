@@ -2,19 +2,19 @@ import "../../styles/menu.css";
 import "../../styles/title-screen.css";
 import { type ScheduledNote, schedule } from "../audio/ocarina-sampler.ts";
 import Experience from "../experience.ts";
+import { hasModifier } from "../input/keyboard.ts";
+import type { OcarinaButton } from "../ocarina-buttons.ts";
 import { listen } from "../utils/events.ts";
-import { hasModifier, type OcarinaButton } from "../utils/keyboard.ts";
 import { fragment, query } from "./dom.ts";
 import { MENU_KEYS, n64Icon } from "./menu.ts";
-import { HEADPHONES, pixelIcon, TRIFORCE } from "./pixel-art.ts";
+import { headphonesIcon, triforceIcon } from "./pixel-icons.ts";
 
-// Keys that press Start: A, Enter, and Esc, the Start button in the menus
 const START_KEYS = new Set(["Space", "Enter", "NumpadEnter", "Escape"]);
 // Matches the fade out in title-screen.css, in ms
 const FADE_OUT = 600;
 // Longest wait for the pixel font before showing the text anyway, in ms
 const FONT_TIMEOUT = 2000;
-// Played when starting, so the player knows the sound is on: D4 A4 D5
+// Played on Start, so the player hears that the sound is on: D4 A4 D5
 const MOTIF_DELAY = 0.05;
 const START_MOTIF: readonly Omit<ScheduledNote, "time">[] = [
 	{ button: "A", duration: 0.11 },
@@ -22,11 +22,8 @@ const START_MOTIF: readonly Omit<ScheduledNote, "time">[] = [
 	{ button: "CUp", duration: 0.4 },
 ];
 
-// Which key sounds which ocarina button, shown before the player even starts:
-// on a touch screen the buttons are on screen, on a keyboard nothing says the
-// ocarina is played at all. Only the keys every layout agrees on — Space and
-// the arrows. WASD, which reads ZQSD on an AZERTY keyboard, is left to the
-// settings menu, where the browser can relabel it (Chromium only).
+// Only the keys that are the same on every layout. WASD (ZQSD on AZERTY) is
+// shown in the settings menu, which can relabel it.
 const CONTROLS: { button: OcarinaButton; label?: string; key: string }[] = [
 	{ button: "A", label: "A button", key: "Space" },
 	{ button: "CUp", key: "↑" },
@@ -38,7 +35,7 @@ const CONTROLS: { button: OcarinaButton; label?: string; key: string }[] = [
 const TEMPLATE = /* html */ `
 <div class="title-screen" role="dialog" aria-modal="true" aria-labelledby="title-screen-title">
 	<div class="title-screen__logo">
-		<span class="title-screen__triforce">${pixelIcon(TRIFORCE)}</span>
+		<span class="title-screen__triforce">${triforceIcon}</span>
 		<h1 class="menu__title title-screen__title" id="title-screen-title">Ocarina</h1>
 		<p class="title-screen__subtitle oot-text">Songs of Hyrule</p>
 	</div>
@@ -64,16 +61,14 @@ const TEMPLATE = /* html */ `
 		</ul>
 	</div>
 	<p class="title-screen__sound oot-text">
-		<span class="title-screen__headphones">${pixelIcon(HEADPHONES)}</span>
+		<span class="title-screen__headphones">${headphonesIcon}</span>
 		<span>Sound on</span>
 	</p>
 </div>
 `;
 
-// The title screen, like the game's "Press Start": a magic gauge fills while
-// the assets load, then the blurred scene shows behind and any click, tap or
-// Start key enters. Browsers only play sound after such a gesture, so this is
-// where audio starts. Everything else stays hidden and silent until then.
+// A loading gauge, then "Press Start". Browsers only allow audio after a user
+// gesture, so the rest of the UI and the keyboard wait for this click or key.
 export default class TitleScreen {
 	private readonly root: HTMLElement;
 	private readonly gauge: HTMLElement;
@@ -97,13 +92,13 @@ export default class TitleScreen {
 
 		const { signal } = this.listeners;
 		this.root.addEventListener("click", this.start, { signal });
-		// Captured on the window, before the ocarina and the menus hear the keys
+		// Capture phase, so the ocarina and the menus don't get the keys
 		window.addEventListener("keydown", this.handleKeydown, {
 			capture: true,
 			signal,
 		});
 
-		// The title waits for its pixel font rather than flashing a fallback
+		// Wait for the pixel font rather than flash a fallback
 		Promise.race([
 			document.fonts.load('1em "Jersey 10"'),
 			new Promise((resolve) => window.setTimeout(resolve, FONT_TIMEOUT)),
@@ -137,7 +132,7 @@ export default class TitleScreen {
 		if (!e.repeat && START_KEYS.has(e.code)) this.start();
 	};
 
-	// Inside the gesture's event: iOS only starts audio there
+	// Must run inside the gesture's event: iOS only starts audio there
 	private start = () => {
 		if (!this.ready || this.started) return;
 		this.started = true;
@@ -151,7 +146,6 @@ export default class TitleScreen {
 			);
 		}
 
-		// Says the scene can be turned, before the player wonders
 		camera.drift();
 
 		this.listeners.abort();

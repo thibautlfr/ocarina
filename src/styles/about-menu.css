@@ -1,7 +1,6 @@
 /* About: who made the experience, their links, and the credits */
 
-/* Signature, in the corner opposite the game's buttons: small and dimmed so it
-   stays out of the scene, gold under the pointer. */
+/* The signature, bottom right, dimmed until hovered */
 .about-toggle {
 	--corner: 9px;
 	--thickness: 4px;
@@ -21,8 +20,8 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-/* Dimmed on its own element: the title screen fades the button itself in, and
-   this must not fade with it but snap, like every pixel element */
+/* Dimmed on the label: the button's own opacity has a transition (see
+   title-screen.css), and hover should apply instantly */
 .about-toggle__label {
 	opacity: 0.55;
 }
@@ -37,24 +36,13 @@
 	opacity: 1;
 }
 
-.about-toggle.is-hovered::after,
-.about-toggle:focus-visible::after {
-	opacity: 1;
-	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
-}
-
 .about-toggle__by {
 	font-size: 18px;
 	opacity: 0.8;
 }
 
-/* Third of the game's buttons, after the gear and the song book: the About is
-   the page that must be findable, so it doesn't rely on the signature alone.
-   TODO: hidden for now, kept for the day the signature proves too discreet —
-   drop the `display` to bring it back (the `menu opened` event carries which
-   way in was used in `from`). */
+/* Third corner button, after settings and the song book */
 .about-button {
-	display: none;
 	position: fixed;
 	bottom: var(--corner-margin);
 	left: calc(var(--corner-margin) + var(--corner-step) * 2);
@@ -96,24 +84,18 @@
 	--thickness: 4px;
 	--cursor-inset: -7px;
 	--cursor-pulse: -4px;
-	--face: #fff;
-	--light: #fff;
-	--shade: #d6d8ec;
-	--edge: var(--oot-ink);
+	color: #fff;
 	display: block;
 }
 
 .about__social svg {
 	display: block;
-	height: 45px;
+	height: 41px;
 }
 
-/* The one thing the experience asks back. The whole stone is the button, so it
-   hands its padding to the link and the link fills it, at any width: one thing
-   to aim at, and one cursor to show it — the slab's own golden corners. No
-   small corners of its own, two frames around one link read as two choices.
-   Picked, the gold goes white, like the slab's border. */
-.about__feedback {
+/* A link filling its whole slab: the slab's padding moves to the link so the
+   whole stone is clickable */
+.about__action-row {
 	padding: 0;
 }
 
@@ -192,7 +174,7 @@
 	}
 
 	.about__social svg {
-		height: 39px;
+		height: 35px;
 	}
 
 	/* Who under what: the longest lines don't fit side by side */
@@ -216,7 +198,7 @@
 		bottom: auto;
 	}
 
-	/* Under the song book, the game's buttons running down the top left */
+	/* Under the song book button */
 	.about-button {
 		top: calc(
 			var(--corner-margin) +

@@ -1,12 +1,18 @@
 import "../../styles/menu.css";
 import "../../styles/settings-menu.css";
 import Experience from "../experience.ts";
-import { songs } from "../songs.ts";
+import type { OcarinaButton } from "../ocarina-buttons.ts";
+import { songs } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
-import type { OcarinaButton } from "../utils/keyboard.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
-import Menu, { type MenuAction, n64Icon, playMenuSound } from "./menu.ts";
-import { CROSS, GEAR, pixelButton } from "./pixel-art.ts";
+import Menu, {
+	CLOSE_BUTTON,
+	type MenuAction,
+	n64Icon,
+	playMenuSound,
+} from "./menu.ts";
+import gearGlyph from "./pixel/glyphs/gear.svg?raw";
+import { pixelButton } from "./pixel-button.ts";
 
 // The volume setting goes from 0 to 1 in this many steps
 const VOLUME_LEVELS = 5;
@@ -33,7 +39,7 @@ const CONTROLS: { button: OcarinaButton; label?: string; keys: string[] }[] = [
 
 const TEMPLATE = /* html */ `
 <button class="pixel-button menu-toggle" type="button" aria-label="Settings" title="Settings (Esc)" aria-haspopup="dialog" aria-controls="settings-menu">
-	${pixelButton(GEAR, 5, 3)}
+	${pixelButton(gearGlyph)}
 </button>
 <dialog class="menu" id="settings-menu" aria-labelledby="menu-title">
 	<div class="menu__panel">
@@ -78,21 +84,19 @@ const TEMPLATE = /* html */ `
 			</li>
 		</ul>
 	</div>
-	<button class="pixel-button pixel-button--close menu__close" type="button" aria-label="Close" title="Close (Esc)">
-		${pixelButton(CROSS, 6, 4)}
-	</button>
+	${CLOSE_BUTTON}
 </dialog>
 `;
 
-// The settings menu, styled after Ocarina of Time's file select: stone slabs
-// and a golden cursor. Opens with Esc (the Start button) or the corner button.
+// Volume, song recognition, erasing progress, and the controls. Opens with Esc
+// or its corner button.
 export default class SettingsMenu extends Menu {
 	private readonly volume: HTMLElement;
 	private readonly volumeBars: HTMLElement[];
 	private readonly recognitionSwitch: HTMLButtonElement;
 	private readonly progressLabel: HTMLElement;
 	private readonly eraseButton: HTMLButtonElement;
-	// Erasing the songs learned asks first, like erasing a file: Yes or No
+	// The answer being picked while erasing asks for confirmation
 	private erase: "yes" | "no" | null = null;
 	private lastVolumeSound = 0;
 	private readonly unsubscribes: (() => void)[];
@@ -166,7 +170,6 @@ export default class SettingsMenu extends Menu {
 		this.cancelErase();
 	}
 
-	// Esc is the Start button
 	private handleWindowKeydown = (e: KeyboardEvent) => {
 		if (e.code !== "Escape" || e.repeat || this.dialog.open) return;
 		if (e.target instanceof HTMLElement && e.target.closest("input, textarea"))
@@ -252,8 +255,7 @@ export default class SettingsMenu extends Menu {
 		this.render();
 	}
 
-	// The select sound, played at the new volume so it can be heard, from a
-	// click or ◀ ▶ alike
+	// Played at the new volume, throttled while the level changes quickly
 	private playVolumeSound() {
 		const now = performance.now();
 		if (now - this.lastVolumeSound < VOLUME_SOUND_INTERVAL) return;

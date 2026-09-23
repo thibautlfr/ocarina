@@ -1,4 +1,5 @@
 import "../../styles/menu.css";
+import "../../styles/song-note.css";
 import "../../styles/song-book.css";
 import {
 	type ScheduledNote,
@@ -6,25 +7,26 @@ import {
 	schedule,
 } from "../audio/ocarina-sampler.ts";
 import Experience from "../experience.ts";
-import { noteDurations, type Song, songs } from "../songs.ts";
+import type { OcarinaButton } from "../ocarina-buttons.ts";
+import { noteDurations, type Song, songs } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
-import type { OcarinaButton } from "../utils/keyboard.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
-import Menu, { type MenuAction, n64Icon, playMenuSound } from "./menu.ts";
-import {
-	CROSS,
-	EIGHTH_NOTE,
-	pixelButton,
-	pixelIcon,
-	SONG_NOTE,
-	TREBLE_CLEF,
-} from "./pixel-art.ts";
-import { shareOcarina } from "./share.ts";
+import Menu, {
+	CLOSE_BUTTON,
+	type MenuAction,
+	n64Icon,
+	playMenuSound,
+} from "./menu.ts";
+import eighthNoteGlyph from "./pixel/glyphs/eighth-note.svg?raw";
+import { pixelButton } from "./pixel-button.ts";
+import { songNoteIcon, trebleClefIcon } from "./pixel-icons.ts";
+import SongHint from "./song-hint.ts";
+import SongLearned from "./song-learned.ts";
 
 type Game = Song["game"];
 const GAMES: Game[] = ["Ocarina of Time", "Majora's Mask"];
 
-// The notes as the games' quest screens lay them out, shelf by shelf
+// The songs as the games' quest screens lay them out, shelf by shelf
 const SHELVES: Record<Game, string[][]> = {
 	"Ocarina of Time": [
 		[
@@ -61,23 +63,8 @@ const SHELVES: Record<Game, string[][]> = {
 	],
 };
 
-// The notes' colors (see song-book.css). Unlisted songs are white.
-const NOTE_COLORS: Record<string, string> = {
-	"Minuet of Forest": "green",
-	"Bolero of Fire": "red",
-	"Serenade of Water": "blue",
-	"Requiem of Spirit": "orange",
-	"Nocturne of Shadow": "purple",
-	"Prelude of Light": "yellow",
-	"Song of Healing": "pink",
-	"Sonata of Awakening": "green",
-	"Goron Lullaby": "red",
-	"New Wave Bossa Nova": "blue",
-	"Elegy of Emptiness": "orange",
-};
-
-// Staff position of each button's pitch, in steps (a line or a space) above
-// the bottom line, E4: A D4 hangs under it, C▲ D5 sits on the fourth line
+// Staff position of each button's pitch, in lines and spaces above the bottom
+// line (E4): A (D4) hangs under it, C▲ (D5) sits on the fourth line
 const STAFF_STEPS: Record<OcarinaButton, number> = {
 	A: -1,
 	CDown: 1,
@@ -86,29 +73,11 @@ const STAFF_STEPS: Record<OcarinaButton, number> = {
 	CUp: 6,
 };
 
-// Time from the click to the first note of a demo, in seconds
+// Delay before a demo's first note, and fade of a demo cut by another, in s
 const DEMO_DELAY = 0.08;
-// Fade of a demo cut by another one, which starts once it's done
 const DEMO_CUT_FADE = 0.15;
-// How long the message for a newly learned song stays, in milliseconds
-const LEARNED_DURATION = 3600;
-// The first one carries the share line and waits to be read, like the banner
-// of the completion, and lingers once the pointer leaves it
-const LEARNED_SHARE_DURATION = 9000;
-const LEARNED_LINGER_DURATION = 3000;
-// How long "Link copied!" stays, in milliseconds
-const COPIED_DURATION = 2400;
-// A player making notes for this long without a song being recognized is
-// shown where the songs are, in milliseconds. Short: someone free-playing
-// their way through the five buttons has already had their moment with them.
-const HINT_DELAY = 8000;
-// The hint says its piece and leaves: it's a nudge, not a nag
-const HINT_DURATION = 18000;
-// Between the reveals of several new notes, in seconds
+// Delay between the reveals of several new notes, in s
 const REVEAL_STAGGER = 0.12;
-
-const noteColorClass = (song: Song) =>
-	`song-note--${NOTE_COLORS[song.name] ?? "white"}`;
 
 const findSong = (name: string): Song => {
 	const song = songs.find((s) => s.name === name);
@@ -126,19 +95,9 @@ type Cursor = { shelf: number; note: number };
 
 const TEMPLATE = /* html */ `
 <button class="pixel-button song-book-toggle" type="button" aria-label="Songs" title="Songs" aria-haspopup="dialog" aria-controls="song-book">
-	${pixelButton(EIGHTH_NOTE, 5, 3)}
+	${pixelButton(eighthNoteGlyph)}
 	<span class="song-book-toggle__badge" hidden></span>
 </button>
-<button class="slab song-hint" type="button" data-source="hint" aria-haspopup="dialog" aria-controls="song-book">
-	<span class="song-hint__text oot-text">Learn a song</span>
-</button>
-<div class="slab song-learned" role="status" aria-live="polite" aria-atomic="true">
-	<span class="song-note song-learned__note">${pixelIcon(SONG_NOTE)}</span>
-	<div class="song-learned__body">
-		<p class="song-learned__text oot-text"><span>You learned</span> <span><strong></strong>!</span></p>
-		<button class="song-learned__share cursor-frame oot-text" type="button" data-link="share" hidden>Share this ocarina</button>
-	</div>
-</div>
 <dialog class="menu song-book" id="song-book" aria-labelledby="song-book-title">
 	<div class="menu__panel">
 		<h2 class="menu__title" id="song-book-title">Songs</h2>
@@ -156,96 +115,54 @@ const TEMPLATE = /* html */ `
 				<p class="song-book__name oot-text" aria-live="polite"></p>
 				<div class="staff">
 					<span class="staff__lines"></span>
-					<span class="staff__clef">${pixelIcon(TREBLE_CLEF)}</span>
+					<span class="staff__clef">${trebleClefIcon}</span>
 					<ol class="staff__notes"></ol>
 				</div>
 			</li>
 		</ul>
 	</div>
-	<button class="pixel-button pixel-button--close menu__close" type="button" aria-label="Close" title="Close (Esc)">
-		${pixelButton(CROSS, 6, 4)}
-	</button>
+	${CLOSE_BUTTON}
 </dialog>
 `;
 
-// The song book, after the songs of Ocarina of Time's quest status screen: a
-// note per song, the selected one written on a staff with the N64 buttons.
-// Confirming a song has the ocarina play it. Driven like the settings menu.
+// The song book, after Ocarina of Time's quest status screen: a note per song,
+// the selected one written on a staff. Confirming a song plays it.
 export default class SongBook extends Menu {
 	private readonly badge: HTMLElement;
-	private readonly learned: HTMLElement;
-	private readonly shareButton: HTMLButtonElement;
-	private readonly shareLabel: string;
-	private learnedTimeout = 0;
-	private copiedTimeout = 0;
-	// The nudge toward the book, for a player who hasn't found a song yet
-	private readonly hint: HTMLButtonElement;
-	private hintTimeout = 0;
-	private hintHideTimeout = 0;
-	// It's shown once, and never comes back in the same visit
-	private hintDone = false;
-	private unwaitNote: (() => void) | null = null;
+	private readonly hint: SongHint;
+	private readonly learned: SongLearned;
 	private readonly gameSwitch: HTMLButtonElement;
 	private readonly shelves: HTMLElement;
 	private readonly name: HTMLElement;
 	private readonly staffNotes: HTMLElement;
-	// The note elements of the game shown
 	private noteElements: HTMLElement[] = [];
 	private game: Game = GAMES[0];
-	// The selected note of each game, kept between openings like the game's cursor
+	// Kept between openings, one per game
 	private readonly cursors = Object.fromEntries(
 		GAMES.map((game) => [game, { shelf: 0, note: 0 }]),
 	) as Record<Game, Cursor>;
-	// The demo playing, and its staff lighting callbacks
 	private demo: Sequence | null = null;
 	private demoCancels: (() => void)[] = [];
-	// Bumped whenever the staff changes, so a demo stops lighting its notes
+	// Bumped whenever the staff is redrawn, so a playing demo stops lighting it
 	private staffVersion = 0;
-	private readonly unsubscribes: (() => void)[];
+	private readonly unsubscribe: () => void;
 
 	constructor() {
 		const content = fragment(TEMPLATE);
-		// The cursor starts on the songs
+		// The cursor starts on the songs row
 		super(query(content, ".song-book-toggle"), query(content, ".song-book"), 1);
 		this.badge = query(this.toggle, ".song-book-toggle__badge");
-		this.learned = query(content, ".song-learned");
-		this.shareButton = query(this.learned, ".song-learned__share");
-		this.shareLabel = this.shareButton.textContent ?? "";
-		this.hint = query(content, ".song-hint");
 		this.gameSwitch = query(this.dialog, ".song-book__games");
 		this.shelves = query(this.dialog, ".song-book__shelves");
 		this.name = query(this.dialog, ".song-book__name");
 		this.staffNotes = query(this.dialog, ".staff__notes");
 		document.body.append(content);
 
+		this.hint = new SongHint(this.toggle);
+		this.addToggle(this.hint.button);
+		this.learned = new SongLearned();
+
 		const { signal } = this.listeners;
-
-		// One more way into the book, and the one a lost player is handed
-		this.addToggle(this.hint);
-
-		this.shareButton.addEventListener("click", () => this.share(), { signal });
-		// The message can't leave while the share line is being reached for
-		this.shareButton.addEventListener(
-			"pointerenter",
-			() => this.holdLearned(),
-			{
-				signal,
-			},
-		);
-		this.shareButton.addEventListener("focus", () => this.holdLearned(), {
-			signal,
-		});
-		this.shareButton.addEventListener(
-			"pointerleave",
-			() => this.hideLearnedIn(LEARNED_LINGER_DURATION),
-			{ signal },
-		);
-		this.shareButton.addEventListener(
-			"blur",
-			() => this.hideLearnedIn(LEARNED_LINGER_DURATION),
-			{ signal },
-		);
-
 		this.gameSwitch.addEventListener(
 			"click",
 			(e) => {
@@ -268,7 +185,7 @@ export default class SongBook extends Menu {
 			(e) => {
 				const note = closest(e.target, "[data-note]");
 				if (!note) return;
-				// No select sound: the song playing is the feedback
+				// No select sound: the song itself plays
 				this.selectNoteElement(note);
 				this.playSong();
 			},
@@ -276,30 +193,27 @@ export default class SongBook extends Menu {
 		);
 
 		const { songProgress } = Experience.getInstance();
-		this.unsubscribes = [
-			listen(songProgress.emitter, "learn", (song) => this.showLearned(song)),
-			listen(songProgress.emitter, "change", () => this.renderProgress()),
-		];
+		this.unsubscribe = listen(songProgress.emitter, "change", () =>
+			this.renderProgress(),
+		);
 
-		this.waitForFirstNote();
 		this.renderGame();
 	}
 
 	override open() {
 		if (this.dialog.open) return;
-		this.hideHint();
-		this.hideLearned();
-		// Straight to the game with new songs
+		this.hint.hide();
+		this.learned.hide();
+		// Open on the game with new songs
 		if (!this.hasUnseen(this.game) && this.hasUnseen(this.otherGame)) {
 			this.game = this.otherGame;
 		}
 		super.open();
-		// Rendered once open, so new notes are revealed in front of the player
+		// Rendered after opening, so new notes are revealed in front of the player
 		this.renderGame();
 	}
 
 	protected override onClose() {
-		// The song being played stops with the book
 		this.stopDemo(DEMO_CUT_FADE);
 		this.renderProgress();
 	}
@@ -369,7 +283,7 @@ export default class SongBook extends Menu {
 		this.renderGame();
 	}
 
-	// Left and right go through every note, from one shelf to the next
+	// Left and right go through every note, wrapping from one shelf to the next
 	private stepNote(direction: number) {
 		const all = this.book.flatMap((row, shelf) =>
 			row.map((_, note) => ({ shelf, note })),
@@ -387,7 +301,7 @@ export default class SongBook extends Menu {
 		);
 	}
 
-	// A shelf may be shorter than the one above: the cursor stops at its end
+	// A shelf can be shorter than the one above: the cursor stops at its end
 	private selectNote(shelf: number, note: number) {
 		const clamped = Math.min(note, this.book[shelf].length - 1);
 		if (this.dialog.open && this.row !== "songs") {
@@ -405,7 +319,6 @@ export default class SongBook extends Menu {
 		}
 
 		const { songProgress } = Experience.getInstance();
-		// New notes are only revealed while the book is open, one after the other
 		let reveals = 0;
 		const noteHtml = (song: Song, shelf: number, note: number) => {
 			const isNew = this.dialog.open && songProgress.isUnseen(song);
@@ -414,8 +327,8 @@ export default class SongBook extends Menu {
 				? ` style="--reveal-delay: ${reveals++ * REVEAL_STAGGER}s"`
 				: "";
 			return `
-				<span class="song-note cursor-frame ${noteColorClass(song)}${newClass}"${style} role="option" id="${noteId(shelf, note)}" data-shelf="${shelf}" data-note="${note}">
-					${pixelIcon(SONG_NOTE)}
+				<span class="song-note song-note--${song.color} cursor-frame${newClass}"${style} role="option" id="${noteId(shelf, note)}" data-shelf="${shelf}" data-note="${note}">
+					${songNoteIcon}
 				</span>`;
 		};
 		this.shelves.innerHTML = this.book
@@ -433,7 +346,6 @@ export default class SongBook extends Menu {
 		if (this.dialog.open) songProgress.markSeen(this.book.flat());
 	}
 
-	// Songs not played yet are empty slots, carved in the stone
 	private renderProgress() {
 		const { songProgress } = Experience.getInstance();
 		for (const element of this.noteElements) {
@@ -476,116 +388,7 @@ export default class SongBook extends Menu {
 			.join("");
 	}
 
-	// "You learned Zelda's Lullaby!", while the jingle plays
-	private showLearned(song: Song) {
-		this.hideHint();
-		query(this.learned, ".song-learned__note").className =
-			`song-note song-learned__note ${noteColorClass(song)}`;
-		query(this.learned, "strong").textContent = song.name;
-
-		// The very first song is the moment the experience clicks, and the only
-		// one that carries the offer to share it: past that it would be a prompt
-		// pushed at a player who is busy learning the rest
-		const first = Experience.getInstance().songProgress.learnedCount === 1;
-		this.resetShare();
-		this.shareButton.hidden = !first;
-		this.learned.classList.toggle("song-learned--share", first);
-
-		// Restarts the entrance when a message is still showing
-		this.learned.classList.remove("is-visible");
-		void this.learned.offsetWidth;
-		this.learned.classList.add("is-visible");
-		this.hideLearnedIn(first ? LEARNED_SHARE_DURATION : LEARNED_DURATION);
-	}
-
-	private hideLearnedIn(delay: number) {
-		window.clearTimeout(this.learnedTimeout);
-		this.learnedTimeout = window.setTimeout(() => this.hideLearned(), delay);
-	}
-
-	private holdLearned() {
-		window.clearTimeout(this.learnedTimeout);
-	}
-
-	private hideLearned() {
-		window.clearTimeout(this.learnedTimeout);
-		this.learned.classList.remove("is-visible");
-	}
-
-	private async share() {
-		this.holdLearned();
-		const answer = await shareOcarina();
-		if (answer) {
-			window.clearTimeout(this.copiedTimeout);
-			this.shareButton.textContent = answer;
-			this.shareButton.classList.add("is-copied");
-			this.copiedTimeout = window.setTimeout(
-				() => this.resetShare(),
-				COPIED_DURATION,
-			);
-		}
-		// Said its piece: the message leaves on its own from here
-		this.hideLearnedIn(LEARNED_SHARE_DURATION);
-	}
-
-	private resetShare() {
-		window.clearTimeout(this.copiedTimeout);
-		this.shareButton.textContent = this.shareLabel;
-		this.shareButton.classList.remove("is-copied");
-	}
-
-	// A player can press the ocarina keys for a while without ever stumbling on
-	// a song: the book teaches them, but nothing says it's there. After a first
-	// note and a stretch with nothing recognized, the book's button asks to be
-	// opened. Only ever for a player who hasn't learned anything yet.
-	private waitForFirstNote() {
-		const { keyboard, songProgress } = Experience.getInstance();
-		// The one thing that can't change during the visit
-		if (songProgress.learnedCount > 0) return;
-		this.unwaitNote = listen(keyboard.emitter, "noteDown", () => {
-			this.stopWaitingForNote();
-			this.hintTimeout = window.setTimeout(() => this.showHint(), HINT_DELAY);
-		});
-	}
-
-	private stopWaitingForNote() {
-		this.unwaitNote?.();
-		this.unwaitNote = null;
-	}
-
-	// Nothing to nudge toward with recognition off, and nothing to teach a
-	// player who already knows a song
-	private canHint(): boolean {
-		const { songProgress, settings } = Experience.getInstance();
-		return (
-			!this.hintDone &&
-			songProgress.learnedCount === 0 &&
-			settings.values.songRecognition
-		);
-	}
-
-	private showHint() {
-		if (!this.canHint() || this.dialog.open) return;
-		this.hintDone = true;
-		this.hint.classList.add("is-visible");
-		this.toggle.classList.add("is-nudging");
-		this.hintHideTimeout = window.setTimeout(
-			() => this.hideHint(),
-			HINT_DURATION,
-		);
-	}
-
-	private hideHint() {
-		this.hintDone = true;
-		this.stopWaitingForNote();
-		window.clearTimeout(this.hintTimeout);
-		window.clearTimeout(this.hintHideTimeout);
-		this.hint.classList.remove("is-visible");
-		this.toggle.classList.remove("is-nudging");
-	}
-
-	// The ocarina plays the selected song in rhythm, each note lighting up on
-	// the staff as it sounds
+	// Plays the selected song in rhythm, lighting each note on the staff
 	private playSong() {
 		const sampler = Experience.getInstance().world.sampler;
 		if (!sampler) return;
@@ -607,7 +410,7 @@ export default class SongBook extends Menu {
 		];
 	}
 
-	// Fades out the demo still playing, if any. Returns whether there was one.
+	// Fades out the demo if one is playing, and returns whether one was
 	private stopDemo(fade: number): boolean {
 		const sampler = Experience.getInstance().world.sampler;
 		const playing =
@@ -631,12 +434,8 @@ export default class SongBook extends Menu {
 
 	override destroy() {
 		super.destroy();
-		this.stopWaitingForNote();
-		window.clearTimeout(this.learnedTimeout);
-		window.clearTimeout(this.copiedTimeout);
-		window.clearTimeout(this.hintTimeout);
-		window.clearTimeout(this.hintHideTimeout);
-		for (const unsubscribe of this.unsubscribes) unsubscribe();
-		this.learned.remove();
+		this.hint.destroy();
+		this.learned.destroy();
+		this.unsubscribe();
 	}
 }

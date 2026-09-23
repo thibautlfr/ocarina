@@ -1,31 +1,25 @@
-// Sharing the experience, from the message of the first song learned and from
-// the banner that celebrates the last one. Those two moments only: a prompt
-// after every song would push the experience at the player instead of letting
-// them find it, and asking from the About menu read as begging next to the
-// credits.
+import { isTouchScreen, trackHover } from "./dom.ts";
 
-import { isTouchScreen } from "./dom.ts";
-
-// What a share carries
 const SHARE_TEXT = "Play the Ocarina of Time in your browser 🎵";
+// How long the answer ("Link copied!") replaces the label, in ms
+const ANSWER_DURATION = 2400;
 
-// The canonical address (index.html), not the current one: a share carries the
-// site, not a localhost port or a #debug hash
+// The canonical address from index.html, so a share never carries localhost
+// or a #debug hash
 export const shareUrl = () =>
 	document.querySelector<HTMLLinkElement>('link[rel="canonical"]')?.href ??
 	window.location.origin + import.meta.env.BASE_URL;
 
-// The phone's own share sheet, where sharing a link is what people do; on a
-// desktop it would open a clunky system panel, so the link is copied instead.
-// Returns what to answer the player, or nothing when the share sheet already
-// answered.
+// Opens the share sheet on phones and copies the link on desktop, where the
+// system share panel is clunky. Returns what to tell the player, or null when
+// the share sheet did.
 export const shareOcarina = async (): Promise<string | null> => {
 	const url = shareUrl();
 	if (navigator.share && isTouchScreen()) {
 		try {
 			await navigator.share({ title: document.title, text: SHARE_TEXT, url });
 		} catch {
-			// Cancelled from the share sheet, or not allowed here
+			// Cancelled, or not allowed here
 		}
 		return null;
 	}
@@ -33,8 +27,60 @@ export const shareOcarina = async (): Promise<string | null> => {
 		await navigator.clipboard.writeText(url);
 		return "Link copied!";
 	} catch {
-		// Clipboard refused (an old browser, or no permission): show the address
-		// instead, so it can still be read and typed
+		// No clipboard access: show the address so it can be typed
 		return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
 	}
 };
+
+type ShareButtonOptions = {
+	onStart: () => void;
+	onEnd: () => void;
+};
+
+// A "Share this ocarina" button that shows the answer in place of its label
+// for a moment
+export class ShareButton {
+	private readonly button: HTMLButtonElement;
+	private readonly label: string;
+	private resetTimeout = 0;
+	private readonly listeners = new AbortController();
+
+	constructor(
+		button: HTMLButtonElement,
+		{ onStart, onEnd }: ShareButtonOptions,
+	) {
+		this.button = button;
+		this.label = button.textContent ?? "";
+
+		const { signal } = this.listeners;
+		trackHover(button, signal);
+		button.addEventListener(
+			"click",
+			async () => {
+				onStart();
+				const answer = await shareOcarina();
+				if (answer) this.showAnswer(answer);
+				onEnd();
+			},
+			{ signal },
+		);
+	}
+
+	private showAnswer(answer: string) {
+		window.clearTimeout(this.resetTimeout);
+		this.button.textContent = answer;
+		this.button.classList.add("is-copied");
+		this.resetTimeout = window.setTimeout(() => this.reset(), ANSWER_DURATION);
+	}
+
+	reset() {
+		window.clearTimeout(this.resetTimeout);
+		this.button.textContent = this.label;
+		this.button.classList.remove("is-copied");
+	}
+
+	destroy() {
+		window.clearTimeout(this.resetTimeout);
+		this.listeners.abort();
+	}
+}

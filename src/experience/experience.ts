@@ -1,6 +1,10 @@
 import * as THREE from "three";
 import Camera from "./camera.ts";
+import Keyboard from "./input/keyboard.ts";
 import Renderer from "./renderer.ts";
+import Settings from "./settings.ts";
+import SongDetector from "./songs/song-detector.ts";
+import SongProgress from "./songs/song-progress.ts";
 import { sources } from "./sources.ts";
 import AboutMenu from "./ui/about-menu.ts";
 import Completion from "./ui/completion.ts";
@@ -9,12 +13,8 @@ import SongBook from "./ui/song-book.ts";
 import TitleScreen from "./ui/title-screen.ts";
 import TouchControls from "./ui/touch-controls.ts";
 import Debug from "./utils/debug.ts";
-import Keyboard from "./utils/keyboard.ts";
 import Resources from "./utils/resources.ts";
-import Settings from "./utils/settings.ts";
 import Sizes from "./utils/sizes.ts";
-import SongDetector from "./utils/song-detector.ts";
-import SongProgress from "./utils/song-progress.ts";
 import Time from "./utils/time.ts";
 import World from "./world/world.ts";
 

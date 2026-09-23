@@ -1,6 +1,5 @@
-/* Shared menu look, after Ocarina of Time 3D's file select: full-screen
-   dialog, gold title, stone slabs, golden cursor, choices. Used by the
-   settings menu and the song book. */
+/* Shared look after Ocarina of Time 3D's file select: full-screen dialog,
+   gold title, stone slabs, golden cursor, choices */
 
 /* Full-screen dialog, the panel centered in it. The centering stays on the
    closed state too, or the panel would jump to the corner while fading out. */
@@ -71,7 +70,7 @@
 	}
 }
 
-/* Big lettering straight on the scene, gold like the menu cursor */
+/* Big gold title, straight on the scene */
 .menu__title {
 	margin: 0;
 	color: var(--oot-gold);
@@ -171,12 +170,22 @@
 		drop-shadow(0 1px 0 var(--oot-gold-shade));
 	opacity: 0;
 	pointer-events: none;
+	/* Its own layer: the pulse animates inset, which would otherwise repaint
+	   everything under the frame on every frame, filtered icons included */
+	will-change: transform;
 }
 
 .slab.is-selected::after,
-.cursor-frame.is-selected::after {
+.cursor-frame.is-selected::after,
+:is(.slab, .cursor-frame):is(.is-hovered, :focus-visible)::after {
 	opacity: 1;
 	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
+}
+
+/* In a menu only the slabs pulse: a smaller cursor inside one just shows its
+   corners */
+.menu .cursor-frame::after {
+	animation: none;
 }
 
 @keyframes cursor-pulse {
@@ -218,7 +227,7 @@
 	opacity: 0.7;
 }
 
-/* Closes the menu from the corner where its toggle sits */
+/* Over the settings button's corner */
 .menu__close {
 	position: fixed;
 	bottom: var(--corner-margin);
@@ -248,7 +257,8 @@
 	}
 
 	.slab.is-selected::after,
-	.cursor-frame.is-selected::after {
+	.cursor-frame.is-selected::after,
+	:is(.slab, .cursor-frame):is(.is-hovered, :focus-visible)::after {
 		animation: none;
 	}
 }
