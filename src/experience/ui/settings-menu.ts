@@ -1,16 +1,12 @@
 import "../../styles/menu.css";
 import "../../styles/settings-menu.css";
+import { playMenuSound } from "../audio/menu-sounds.ts";
 import Experience from "../experience.ts";
 import type { OcarinaButton } from "../ocarina-buttons.ts";
 import { songs } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
-import Menu, {
-	CLOSE_BUTTON,
-	type MenuAction,
-	n64Icon,
-	playMenuSound,
-} from "./menu.ts";
+import Menu, { CLOSE_BUTTON, type MenuAction, n64Icon } from "./menu.ts";
 import gearGlyph from "./pixel/glyphs/gear.svg?raw";
 import { pixelButton } from "./pixel-button.ts";
 

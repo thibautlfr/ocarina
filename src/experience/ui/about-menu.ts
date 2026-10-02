@@ -1,7 +1,8 @@
 import "../../styles/menu.css";
 import "../../styles/about-menu.css";
+import { playMenuSound } from "../audio/menu-sounds.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
-import Menu, { CLOSE_BUTTON, type MenuAction, playMenuSound } from "./menu.ts";
+import Menu, { CLOSE_BUTTON, type MenuAction } from "./menu.ts";
 import infoGlyph from "./pixel/glyphs/info.svg?raw";
 import { pixelButton } from "./pixel-button.ts";
 import { githubIcon, linkedinIcon, xLogoIcon } from "./pixel-icons.ts";

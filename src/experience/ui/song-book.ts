@@ -1,6 +1,7 @@
 import "../../styles/menu.css";
 import "../../styles/song-note.css";
 import "../../styles/song-book.css";
+import { playMenuSound } from "../audio/menu-sounds.ts";
 import type { Sequence } from "../audio/ocarina-sampler.ts";
 import { type ScheduledNote, schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
@@ -14,12 +15,7 @@ import {
 } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
-import Menu, {
-	CLOSE_BUTTON,
-	type MenuAction,
-	n64Icon,
-	playMenuSound,
-} from "./menu.ts";
+import Menu, { CLOSE_BUTTON, type MenuAction, n64Icon } from "./menu.ts";
 import eighthNoteGlyph from "./pixel/glyphs/eighth-note.svg?raw";
 import { pixelButton } from "./pixel-button.ts";
 import { songNoteIcon, trebleClefIcon } from "./pixel-icons.ts";
@@ -343,8 +339,7 @@ export default class SongBook extends Menu {
 
 	// Plays the selected song in rhythm, lighting each note on the staff
 	private playSong() {
-		const sampler = Experience.getInstance().world.sampler;
-		if (!sampler) return;
+		const { sampler } = Experience.getInstance();
 		sampler.unlock();
 		const cut = this.stopDemo(DEMO_CUT_FADE);
 
@@ -365,11 +360,8 @@ export default class SongBook extends Menu {
 
 	// Fades out the demo if one is playing, and returns whether one was
 	private stopDemo(fade: number): boolean {
-		const sampler = Experience.getInstance().world.sampler;
-		const playing =
-			this.demo !== null &&
-			sampler !== null &&
-			sampler.currentTime < this.demo.end;
+		const { sampler } = Experience.getInstance();
+		const playing = this.demo !== null && sampler.currentTime < this.demo.end;
 		this.demo?.stop(fade);
 		this.demo = null;
 		for (const cancel of this.demoCancels) cancel();

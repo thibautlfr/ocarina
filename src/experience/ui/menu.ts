@@ -1,3 +1,4 @@
+import { playMenuSound } from "../audio/menu-sounds.ts";
 import Experience from "../experience.ts";
 import { hasModifier } from "../input/keyboard.ts";
 import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
@@ -28,26 +29,6 @@ export const MENU_KEYS: Record<string, MenuAction> = {
 	NumpadEnter: "confirm",
 	Escape: "back",
 	Backspace: "back",
-};
-
-// Volume of each menu sound, by resource name
-const MENU_SOUND_VOLUME = {
-	menuOpen: 0.55,
-	menuClose: 0.55,
-	menuSelect: 0.4,
-} as const;
-type MenuSound = keyof typeof MENU_SOUND_VOLUME;
-
-// Silent until the sampler exists, i.e. until resources are loaded
-export const playMenuSound = (name: MenuSound) => {
-	const { world, resources } = Experience.getInstance();
-	const sampler = world.sampler;
-	if (!sampler) return;
-	sampler.playOneShot(
-		resources.get<AudioBuffer>(name),
-		sampler.currentTime,
-		MENU_SOUND_VOLUME[name],
-	);
 };
 
 const N64_CLASSES: Record<OcarinaButton, string> = {

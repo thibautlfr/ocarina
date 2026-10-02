@@ -137,14 +137,11 @@ export default class TitleScreen {
 		if (!this.ready || this.started) return;
 		this.started = true;
 
-		const { world, keyboard, camera } = Experience.getInstance();
-		const sampler = world.sampler;
-		if (sampler) {
-			sampler.unlock();
-			sampler.playSequence(
-				schedule(START_MOTIF, sampler.currentTime + MOTIF_DELAY),
-			);
-		}
+		const { sampler, keyboard, camera } = Experience.getInstance();
+		sampler.unlock();
+		sampler.playSequence(
+			schedule(START_MOTIF, sampler.currentTime + MOTIF_DELAY),
+		);
 
 		camera.drift();
 

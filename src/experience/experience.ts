@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import OcarinaSampler from "./audio/ocarina-sampler.ts";
 import Camera from "./camera.ts";
 import Keyboard from "./input/keyboard.ts";
 import Renderer from "./renderer.ts";
@@ -46,6 +47,7 @@ export default class Experience {
 	songDetector: SongDetector;
 	songProgress: SongProgress;
 	resources: Resources;
+	sampler: OcarinaSampler;
 
 	static getInstance(canvas?: HTMLCanvasElement): Experience {
 		if (Experience.instance) return Experience.instance;
@@ -68,6 +70,7 @@ export default class Experience {
 		this.songProgress = new SongProgress();
 		this.scene = new THREE.Scene();
 		this.resources = new Resources(sources);
+		this.sampler = new OcarinaSampler();
 		this.camera = new Camera();
 		this.renderer = new Renderer();
 		this.world = new World();
@@ -115,6 +118,7 @@ export default class Experience {
 		this.keyboard.destroy();
 		this.sizes.destroy();
 		this.world.destroy();
+		this.sampler.destroy();
 		this.camera.destroy();
 		this.renderer.destroy();
 		this.settings.destroy();

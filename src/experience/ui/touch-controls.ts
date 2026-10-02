@@ -97,7 +97,7 @@ export default class TouchControls {
 		e.preventDefault();
 		// Keep receiving this finger's moves once it slides off the buttons
 		this.root.setPointerCapture(e.pointerId);
-		Experience.getInstance().world.sampler?.unlock();
+		Experience.getInstance().sampler.unlock();
 		this.follow(e);
 	};
 
@@ -106,8 +106,8 @@ export default class TouchControls {
 	};
 
 	private handlePointerEnd = (e: PointerEvent) => {
-		const { world, keyboard } = Experience.getInstance();
-		world.sampler?.unlock();
+		const { sampler, keyboard } = Experience.getInstance();
+		sampler.unlock();
 		this.fingers.delete(e.pointerId);
 		keyboard.release(inputId(e.pointerId));
 	};
