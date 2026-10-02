@@ -1,36 +1,23 @@
 import "../../styles/touch-controls.css";
 import Experience from "../experience.ts";
+import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
 import { listen } from "../utils/events.ts";
-import { BUTTON_LABELS, type OcarinaButton } from "../utils/keyboard.ts";
 import { fragment, query, queryAll } from "./dom.ts";
-import {
-	ARROW_DOWN,
-	ARROW_LEFT,
-	ARROW_RIGHT,
-	ARROW_UP,
-	LETTER_A,
-	pixelButton,
-} from "./pixel-art.ts";
-
-// Each button's glyph and where it sits on the cap. Arrows are shifted half a
-// cell toward their tip, their base being heavier.
-const DRAWINGS: Record<OcarinaButton, Parameters<typeof pixelButton>> = {
-	A: [LETTER_A, 7, 4],
-	CUp: [ARROW_UP, 5, 5],
-	CLeft: [ARROW_LEFT, 7, 3],
-	CDown: [ARROW_DOWN, 5, 6],
-	CRight: [ARROW_RIGHT, 8, 3],
-};
+import arrowGlyph from "./pixel/glyphs/arrow-right.svg?raw";
+import letterAGlyph from "./pixel/glyphs/letter-a.svg?raw";
+import { pixelButton } from "./pixel-button.ts";
 
 // In the order of their arrow-key layout: up above left, down, right
 const C_BUTTONS: OcarinaButton[] = ["CUp", "CLeft", "CDown", "CRight"];
 
 const HAPTIC_MS = 8;
 
-// The touch area, larger than the pixel button drawn in it (see the CSS)
+// The touch area is larger than the pixel button drawn in it
 const touchButton = (button: OcarinaButton) => `
 <div class="touch-controls__button" role="button" aria-label="${BUTTON_LABELS[button]}" data-button="${button}">
-	<span class="pixel-button pixel-button--${button === "A" ? "a" : "c"}" aria-hidden="true">${pixelButton(...DRAWINGS[button])}</span>
+	<span class="pixel-button pixel-button--${button === "A" ? "a" : "c"}" aria-hidden="true">
+		${pixelButton(button === "A" ? letterAGlyph : arrowGlyph)}
+	</span>
 </div>`;
 
 const TEMPLATE = /* html */ `
@@ -46,12 +33,9 @@ const TEMPLATE = /* html */ `
 
 const inputId = (pointerId: number) => `touch:${pointerId}`;
 
-// On-screen ocarina buttons for touch screens (shown by CSS only there), pixel
-// buttons in the N64 colors: A under the left thumb, the C buttons under the
-// right, laid out like arrow keys. They play through the keyboard like keys
-// do, so locks, songs and the sampler behave the same. A finger can slide
-// from one button to another to play legato, and several fingers can hold
-// buttons at once.
+// On-screen ocarina buttons, shown on touch screens only. They press keys on
+// the Keyboard like physical keys do, so locks and songs work the same. A
+// finger can slide between buttons, and several can be held at once.
 export default class TouchControls {
 	private readonly root: HTMLElement;
 	private readonly buttons: Record<OcarinaButton, HTMLElement>;
@@ -91,7 +75,7 @@ export default class TouchControls {
 		on("touchend", (e) => e.preventDefault(), { passive: false });
 
 		this.unsubscribes = [
-			// Pressed look follows what the keyboard holds, whatever the input
+			// Also shows presses from the physical keys
 			listen(keyboard.emitter, "noteDown", (button) => {
 				this.buttons[button].classList.add("is-pressed");
 				if (this.fingers.size > 0) navigator.vibrate?.(HAPTIC_MS);
@@ -99,8 +83,7 @@ export default class TouchControls {
 			listen(keyboard.emitter, "noteUp", (button) => {
 				this.buttons[button].classList.remove("is-pressed");
 			}),
-			// Greyed out while the keyboard ignores input, e.g. from a recognized
-			// song until its replay has faded
+			// Greyed out while the keyboard is locked, e.g. during a song replay
 			listen(keyboard.emitter, "lockChange", (locked) => {
 				this.root.classList.toggle("is-disabled", locked);
 				for (const button of Object.values(this.buttons)) {

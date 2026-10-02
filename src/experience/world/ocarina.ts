@@ -3,8 +3,8 @@ import * as THREE from "three";
 import type { GLTF } from "three/addons";
 import type OcarinaSampler from "../audio/ocarina-sampler.ts";
 import Experience from "../experience.ts";
+import type { OcarinaButton } from "../ocarina-buttons.ts";
 import { listen } from "../utils/events.ts";
-import type { OcarinaButton } from "../utils/keyboard.ts";
 
 // Float animation: a slow up and down bob, no rotation
 const FLOAT_SPEED = 1.5;
@@ -35,8 +35,8 @@ type Pose = {
 
 const REST: Pose = { y: 0, rotX: 0, rotY: 0, rotZ: 0, scale: 1 };
 
-// Each button leans the ocarina its own way, as if a different finger were pressing.
-// The C buttons tilt toward their controller direction.
+// Each button tilts the ocarina its own way, the C buttons toward their
+// direction
 const NOTE_POSES: Record<OcarinaButton, Pose> = {
 	A: { y: -0.05, rotX: 0.04, rotY: 0, rotZ: 0, scale: 0.98 },
 	CDown: { y: -0.03, rotX: 0.13, rotY: 0, rotZ: 0, scale: 0.99 },
@@ -206,7 +206,7 @@ export default class Ocarina {
 
 		let swing = holdReturn;
 		for (let i = 0; i < holdCycles; i++) {
-			// Swings get smaller and slightly slower, like a motion losing energy
+			// Each swing is smaller and slightly slower than the last
 			const swingDuration = duration * (1 + i * SWING_SLOWDOWN);
 			this.pressTimeline
 				.to(this.press, {

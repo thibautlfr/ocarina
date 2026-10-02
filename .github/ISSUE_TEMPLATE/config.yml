@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Play the experience
+    url: https://thibautlfr.github.io/ocarina/
+    about: Link's house, an ocarina, and 21 songs to find.
+  - name: Discussions
+    url: https://github.com/thibautlfr/ocarina/discussions
+    about: Questions, first impressions, or anything that is not a bug report.

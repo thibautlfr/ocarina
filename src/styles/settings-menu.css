@@ -94,7 +94,7 @@
 		bottom: auto;
 	}
 
-	/* Keyboard keys mean nothing here: the buttons are on screen */
+	/* The touch controls replace the keys */
 	.slab--controls {
 		display: none;
 	}

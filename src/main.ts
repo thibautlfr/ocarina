@@ -1,4 +1,4 @@
-import "./style.css";
+import "./styles/base.css";
 import "./styles/tokens.css";
 import "./styles/ui.css";
 import Experience from "./experience/experience.ts";

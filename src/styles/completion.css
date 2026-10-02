@@ -1,58 +1,26 @@
-/* The banner that celebrates every song learned: a stone slab on the scene,
-   like the "You learned ...!" one, but it waits to be read — it carries the
-   only offer to share the experience outside the About menu. */
+/* The banner shown once every song is learned (built on .toast) */
 
 .completion {
-	position: fixed;
-	top: 24px;
-	left: 50%;
-	z-index: 1;
-	flex-wrap: nowrap;
-	justify-content: flex-start;
 	gap: 14px;
-	width: max-content;
-	max-width: calc(100% - 32px);
-	min-height: 0;
 	padding: 10px 22px 12px 16px;
-	font-family: var(--oot-font);
-	font-synthesis: none;
-	opacity: 0;
-	visibility: hidden;
-	translate: -50% -12px;
-	pointer-events: none;
-	transition:
-		opacity 0.22s ease,
-		translate 0.22s ease,
-		visibility 0s 0.22s;
 }
 
+/* Hovering the banner keeps it on screen */
 .completion.is-visible {
-	opacity: 1;
-	visibility: visible;
-	translate: -50% 0;
 	pointer-events: auto;
-	transition:
-		opacity 0.22s ease,
-		translate 0.22s ease;
 }
 
-/* Gold, like the one on the title screen and the one in the scene */
 .completion__triforce {
-	--face: var(--oot-gold);
-	--light: #fff3a8;
-	--shade: #c98a00;
-	--edge: var(--oot-ink);
+	color: var(--oot-gold);
 	flex: none;
 }
 
-/* 2px per cell: 34 × 31 cells, outline included */
 .completion__triforce svg {
 	display: block;
 	width: 68px;
-	height: 62px;
+	height: auto;
 }
 
-/* Assembles like the one in the scene, in steps */
 .completion.is-visible .completion__triforce svg {
 	animation: completion-triforce 0.5s steps(5) 0.1s backwards;
 }
@@ -64,13 +32,6 @@
 	}
 }
 
-.completion__body {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 2px;
-}
-
 .completion__text {
 	margin: 0;
 	color: var(--oot-gold);
@@ -79,43 +40,13 @@
 	text-wrap: balance;
 }
 
-/* The share line: white until the cursor takes it, like the signature */
-.completion__share {
-	--corner: 10px;
-	--thickness: 4px;
-	--cursor-inset: -4px -8px;
-	--cursor-pulse: -2px -6px;
-	/* The corners belong to the line, not to the slab around it */
-	position: relative;
-	padding: 2px 4px;
-	border: none;
-	background: none;
-	color: #fff;
-	font: 24px / 1 var(--oot-font);
-	font-synthesis: none;
-	cursor: pointer;
-	outline: none;
-	-webkit-tap-highlight-color: transparent;
-}
-
-.completion__share.is-hovered::after,
-.completion__share:focus-visible::after {
-	opacity: 1;
-	animation: cursor-pulse 0.9s ease-in-out infinite alternate;
-}
-
-.completion__share.is-copied {
-	color: var(--oot-gold);
-}
-
-/* Clear of the gear and the song book, which sit at the top left there: this
-   slab is tapped, so it can't lie over them */
+/* Below the corner buttons, which run down the top left on touch screens */
 @media (hover: none) and (pointer: coarse) {
 	.completion {
 		top: calc(
 			var(--corner-margin) +
 			var(--corner-step) *
-			2 +
+			3 +
 			env(safe-area-inset-top)
 		);
 	}
@@ -129,30 +60,16 @@
 
 	.completion__triforce svg {
 		width: 51px;
-		height: 47px;
+		height: auto;
 	}
 
 	.completion__text {
 		font-size: 26px;
 	}
-
-	.completion__share {
-		font-size: 22px;
-	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.completion,
-	.completion.is-visible {
-		transition: none;
-	}
-
 	.completion.is-visible .completion__triforce svg {
-		animation: none;
-	}
-
-	.completion__share.is-hovered::after,
-	.completion__share:focus-visible::after {
 		animation: none;
 	}
 }

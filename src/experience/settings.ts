@@ -1,6 +1,6 @@
 import mitt from "mitt";
-import Experience from "../experience.ts";
-import { loadJson, saveJson } from "./storage.ts";
+import Experience from "./experience.ts";
+import { loadJson, saveJson } from "./utils/storage.ts";
 
 // User preferences, persisted in localStorage. Read them from `values` and
 // write them with `set()` so listeners and storage stay in sync.
@@ -15,7 +15,7 @@ type SettingsEvents = {
 	change: { key: keyof SettingsValues; values: SettingsValues };
 };
 
-const STORAGE_KEY = "ocarina-3d:settings";
+const STORAGE_KEY = "ocarina:settings";
 
 const DEFAULTS: SettingsValues = {
 	volume: 0.8,

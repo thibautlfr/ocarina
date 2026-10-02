@@ -1,41 +1,13 @@
-import type * as THREE from "three";
 import type { GLTF } from "three/addons";
 
-export interface TextureSource {
+export interface Source {
 	readonly name: string;
-	readonly type: "texture";
+	readonly type: "gltfModel" | "audio";
+	// From the site root
 	readonly path: string;
 }
 
-export interface CubeTextureSource {
-	readonly name: string;
-	readonly type: "cubeTexture";
-	readonly path: readonly [string, string, string, string, string, string];
-}
-
-export interface GltfSource {
-	readonly name: string;
-	readonly type: "gltfModel";
-	readonly path: string;
-}
-
-export interface AudioSource {
-	readonly name: string;
-	readonly type: "audio";
-	readonly path: string;
-}
-
-export type Source =
-	| TextureSource
-	| CubeTextureSource
-	| GltfSource
-	| AudioSource;
-
-export type LoadedAsset =
-	| THREE.Texture
-	| THREE.CubeTexture
-	| GLTF
-	| AudioBuffer;
+export type LoadedAsset = GLTF | AudioBuffer;
 
 export const sources: Source[] = [
 	{
@@ -66,7 +38,6 @@ export const sources: Source[] = [
 		type: "audio",
 		path: "/sounds/ocarina/song-correct.wav",
 	},
-	// Settings menu and song book open/close and cursor move
 	{ name: "menuOpen", type: "audio", path: "/sounds/ui/menu-open.wav" },
 	{ name: "menuClose", type: "audio", path: "/sounds/ui/menu-close.wav" },
 	{ name: "menuSelect", type: "audio", path: "/sounds/ui/menu-select.wav" },

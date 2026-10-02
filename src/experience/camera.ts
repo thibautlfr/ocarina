@@ -5,9 +5,8 @@ import Experience from "./experience.ts";
 
 // Vertical field of view, in degrees, on screens wide enough
 const BASE_FOV = 35;
-// Below this aspect ratio (portrait phones), the field of view widens so the
-// horizontal framing stays the same as at this ratio, instead of the stump
-// and the ocarina filling the whole width
+// Below this aspect ratio (portrait phones), the field of view widens to keep
+// the horizontal framing of this ratio
 const MIN_FRAMED_ASPECT = 0.68;
 // Far and low near the door: table on the left, sign and bed behind the stump
 const START_POSITION = new THREE.Vector3(-3.29, 2.32, -4.61);
@@ -20,19 +19,14 @@ const MAX_DISTANCE = 6;
 const MIN_POLAR_ANGLE = 1.15;
 const MAX_POLAR_ANGLE = 1.4;
 
-// One slow swing around the stump when the experience starts: nothing else
-// tells the player the view can be taken hold of. It drops the moment they
-// take it, and never plays again. The camera waits this far short of
-// START_POSITION and swings onto it, so the drift lands on the framing the
-// scene was built around instead of leaving the player beside it.
+// On Start, the camera swings DRIFT_ANGLE onto START_POSITION to show that the
+// view can be rotated. It stops as soon as the player drags.
 const DRIFT_ANGLE = THREE.MathUtils.degToRad(10);
+// In seconds; the delay lets the title screen fade out first
 const DRIFT_DURATION = 2;
-// Long enough for the title screen to be out of the way
 const DRIFT_DELAY = 0.4;
 const UP = new THREE.Vector3(0, 1, 0);
 
-// A camera that moves on its own is what a player sensitive to motion asked
-// not to have: they start on the framing, and nothing swings
 const reducedMotion = () =>
 	window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -62,8 +56,7 @@ export default class Camera {
 		this.controls.minPolarAngle = MIN_POLAR_ANGLE;
 		this.controls.maxPolarAngle = MAX_POLAR_ANGLE;
 
-		// Set before the first frame, so the title screen already shows the
-		// scene from where the swing begins: nothing jumps on Start
+		// Offset before the first frame, so nothing jumps on Start
 		if (!reducedMotion()) {
 			this.driftFrom = -DRIFT_ANGLE;
 			this.orbitBy(this.driftFrom);
@@ -85,13 +78,11 @@ export default class Camera {
 		}
 	}
 
-	// Played once, on Start: the camera swings the last few degrees onto its
-	// framing, and the player sees that the view moves before wondering.
 	drift() {
 		if (this.driftFrom === 0) return;
 
-		// The tween holds the angle left to cover; the camera is turned by what
-		// changed each frame, so a player taking over isn't fought
+		// Turns the camera by each frame's change rather than to an absolute
+		// angle, so it doesn't fight OrbitControls
 		const swing = { angle: this.driftFrom };
 		let applied = this.driftFrom;
 		this.driftFrom = 0;
@@ -109,16 +100,14 @@ export default class Camera {
 		});
 	}
 
-	// The player has taken the view: it's theirs from here
 	private stopDrift = () => {
 		this.controls.removeEventListener("start", this.stopDrift);
 		this.driftTween?.kill();
 		this.driftTween = null;
 	};
 
-	// Turns the camera around the orbit target, keeping its distance and height.
-	// `controls.update()` reads the position back every frame, so damping and
-	// the limits go on working.
+	// Turns the camera around the orbit target. controls.update() reads the new
+	// position back, so damping and limits still apply.
 	private orbitBy(angle: number) {
 		const offset = this.instance.position
 			.clone()

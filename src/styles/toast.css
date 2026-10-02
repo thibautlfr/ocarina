@@ -1,0 +1,76 @@
+/* A slab that slides in at the top center of the screen: the "You learned"
+   message and the completion banner */
+
+.toast {
+	position: fixed;
+	top: 24px;
+	left: 50%;
+	z-index: 1;
+	flex-wrap: nowrap;
+	justify-content: flex-start;
+	width: max-content;
+	max-width: calc(100% - 32px);
+	min-height: 0;
+	font-family: var(--oot-font);
+	font-synthesis: none;
+	opacity: 0;
+	visibility: hidden;
+	translate: -50% -12px;
+	pointer-events: none;
+	transition:
+		opacity 0.22s ease,
+		translate 0.22s ease,
+		visibility 0s 0.22s;
+}
+
+.toast.is-visible {
+	opacity: 1;
+	visibility: visible;
+	translate: -50% 0;
+	transition:
+		opacity 0.22s ease,
+		translate 0.22s ease;
+}
+
+.toast__body {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+}
+
+/* Clickable even when the toast itself lets the pointer through to the scene */
+.toast__share {
+	--corner: 10px;
+	--thickness: 4px;
+	--cursor-inset: -4px -8px;
+	--cursor-pulse: -2px -6px;
+	position: relative;
+	padding: 2px 4px;
+	border: none;
+	background: none;
+	color: #fff;
+	font: 24px / 1 var(--oot-font);
+	font-synthesis: none;
+	cursor: pointer;
+	outline: none;
+	pointer-events: auto;
+	-webkit-tap-highlight-color: transparent;
+}
+
+.toast__share.is-copied {
+	color: var(--oot-gold);
+}
+
+@media (max-width: 480px) {
+	.toast__share {
+		font-size: 22px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.toast,
+	.toast.is-visible {
+		transition: none;
+	}
+}

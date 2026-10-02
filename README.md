@@ -28,12 +28,15 @@ objects — on top of them in a fixed init order.
 src/
   main.ts
   experience/
-    experience.ts       # the singleton root
-    camera.ts, renderer.ts, sources.ts, songs.ts
-    audio/               # the ocarina sampler, song playback/detection
-    ui/                  # settings menu, song book, about menu, title screen, touch controls
-    utils/                # debug, keyboard, resources, settings, sizes, time, storage
-    world/               # the house, the ocarina, the fairies
+    experience.ts      # the singleton root
+    camera.ts, renderer.ts, sources.ts, settings.ts, ocarina-buttons.ts
+    audio/             # the ocarina sampler
+    input/             # keyboard (touch controls play through it too)
+    songs/             # the songs, their detection, progress and playback
+    ui/                # menus, song book, title screen, touch controls
+      pixel/           # pixel-art SVGs exported from Figma
+    utils/             # debug, events, resources, sizes, storage, time
+    world/             # the house, the ocarina, the fairies
   styles/
 ```
 
@@ -42,9 +45,11 @@ repo, and how to pull them in if you have access.
 
 ## Credits
 
-- Link's house model: ripped from the original game, via [The Models Resource](https://www.models-resource.com/)
-- Ocarina and Navi models: [Sketchfab](https://sketchfab.com/), CC BY 4.0
-- Sound effects: extracted from the original game
+- Ocarina model: [pau_alma_3D](https://sketchfab.com/3d-models/ocarina-of-time-40ab5c7438374647b1c86245019f73aa), CC BY 4.0
+- Navi's wings: [darkewne](https://sketchfab.com/3d-models/navi-fairy-of-link-zelda-724f7dbdbc8440edb7cfddb1abfd0a71), CC BY 4.0
+- Link's house: [BrittanyOfKoppai](https://models.spriters-resource.com/3ds/thelegendofzeldaocarinaoftime3d/asset/325223/), ripped from the original game
+- Ocarina sounds: [HelpTheWretched](https://noproblo.dayjo.org/zeldasounds/), extracted from the original game
+- Menu sounds: extracted from the original game
 - Font: [Jersey 10](https://fonts.google.com/specimen/Jersey+10) (Google Fonts)
 
 *The Legend of Zelda: Ocarina of Time* and all related characters, designs and

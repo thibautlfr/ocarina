@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
-// Served from the root of ocarina.thibaut-lefrancois.com (public/CNAME); set
-// VITE_BASE_PATH to build for a subpath, like https://<user>.github.io/<repo>/
+// VITE_BASE_PATH builds for a subpath, like /ocarina/ on GitHub Pages (see
+// .github/workflows/deploy.yml)
 export default defineConfig({
 	base: process.env.VITE_BASE_PATH ?? "/",
 	build: {

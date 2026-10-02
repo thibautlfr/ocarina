@@ -26,9 +26,7 @@ export default class LinksHouse {
 		this.model.scene.updateMatrixWorld(true);
 		scene.add(this.model.scene);
 
-		// The N64 textures are shown as they were drawn, texel for texel:
-		// smoothing them softens the room and fights the pixel art the rest of
-		// the experience is made of
+		// Nearest filtering keeps the low-res N64 textures sharp
 		this.model.scene.traverse((child) => {
 			if (!(child instanceof THREE.Mesh)) return;
 			const { map } = child.material as THREE.MeshBasicMaterial;

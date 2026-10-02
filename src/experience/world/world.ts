@@ -3,8 +3,8 @@ import OcarinaSampler, {
 	type ScheduledNote,
 	schedule,
 } from "../audio/ocarina-sampler.ts";
-import SongPlayback from "../audio/song-playback.ts";
 import Experience from "../experience.ts";
+import SongPlayback from "../songs/song-playback.ts";
 import Fairies from "./fairies.ts";
 import LinksHouse from "./links-house.ts";
 import Ocarina from "./ocarina.ts";
@@ -20,8 +20,7 @@ const SUN_OFFSET = new THREE.Vector3(2, 6, -1.5);
 // Half-size of the shadow camera, in stump radii
 const SHADOW_EXTENT = 1.5;
 
-// The rising motif of the celebration: the ocarina's five notes, climbing to
-// a held D5 while the fairies close their ring
+// The celebration fanfare: the five notes, up to a held D5
 const FANFARE_DELAY = 0.15;
 const FANFARE: readonly Omit<ScheduledNote, "time">[] = [
 	{ button: "A", duration: 0.18 },
@@ -30,8 +29,7 @@ const FANFARE: readonly Omit<ScheduledNote, "time">[] = [
 	{ button: "CLeft", duration: 0.18 },
 	{ button: "CUp", duration: 1.4 },
 ];
-// How long the celebration lasts, in seconds: the fanfare, then a beat for the
-// last note to ring out
+// The fanfare plus time for its last note to ring out, in seconds
 const CELEBRATION_TIME = 3.4;
 
 export default class World {
@@ -97,9 +95,8 @@ export default class World {
 		this.fairies = new Fairies(aboveStump(stumpRadius * OCARINA_STUMP_RATIO));
 	};
 
-	// Every song learned: the fairies gather around the ocarina and spiral up
-	// while it rises through its five notes. Returns how long it lasts, in
-	// seconds (the fairies take longer to scatter again).
+	// Once every song is learned. Returns how long it lasts, in seconds (the
+	// fairies take longer to scatter again).
 	celebrate(): number {
 		this.fairies?.celebrate();
 		if (this.sampler) {

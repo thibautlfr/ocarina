@@ -1,8 +1,8 @@
 import mitt from "mitt";
 import Experience from "../experience.ts";
+import { OCARINA_BUTTONS, type OcarinaButton } from "../ocarina-buttons.ts";
+import type Settings from "../settings.ts";
 import { listen } from "../utils/events.ts";
-import { OCARINA_BUTTONS, type OcarinaButton } from "../utils/keyboard.ts";
-import type Settings from "../utils/settings.ts";
 
 // Resource names of each button's sample (see sources.ts)
 const BUTTON_SAMPLES: Record<OcarinaButton, string> = {

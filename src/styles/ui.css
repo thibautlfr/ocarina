@@ -1,6 +1,4 @@
-/* Shared UI look: lettering, key caps, N64 icons, pixel buttons. Colors, font
-   and corner spacing are tokens (tokens/tokens.json → tokens.css); what Figma
-   can't hold, gradients and textures, stays here. See DESIGN.md. */
+/* Shared UI look: lettering, key caps, N64 icons, pixel buttons */
 
 :root {
 	/* Magic green, lit from the top: filled gauges */
@@ -101,15 +99,44 @@
 	--turn: 270deg;
 }
 
-/* Pixel art drawn by pixelButton() and pixelIcon(): square cells, no smoothing */
+/* The SVGs in ui/pixel/, exported from Figma */
 .pixel-art {
 	display: block;
 	shape-rendering: crispEdges;
 }
 
-/* Chunky pixel button, drawn in SVG from a pixel grid (pixel-art.ts): a cap
-   resting on a thick base. Hovering pushes the cap down, pressing sinks it. */
+/* The 2px ink outline, a stroke under the icon's shapes (pixel-icons.ts):
+   half of it is covered by the shapes, the other half shows around them */
+.pixel-icon {
+	overflow: visible;
+}
+
+.pixel-icon__outline path {
+	fill: var(--oot-ink);
+	stroke: var(--oot-ink);
+	stroke-width: 4px;
+	stroke-linejoin: miter;
+	vector-effect: non-scaling-stroke;
+}
+
+/* Pixel shading drawn in some icons: the top edges catch the light, the
+   bottom edges fall into shade, both mixed from the icon's color */
+.pixel-icon__light {
+	fill: color-mix(in srgb, currentColor 55%, #fff);
+}
+
+.pixel-icon__shade {
+	fill: color-mix(in srgb, currentColor 62%, #000);
+}
+
+/* A cap resting on a base (pixel-button.ts): hovering pushes the cap down,
+   pressing sinks it further */
 .pixel-button {
+	--edge: #1b1d24;
+	--shade: #5f6473;
+	--face: #a3a7b3;
+	--light: #dfe2e8;
+	--glyph: #2c2f3a;
 	width: 60px;
 	height: 60px;
 	padding: 0;
@@ -120,22 +147,71 @@
 	-webkit-tap-highlight-color: transparent;
 }
 
-.pixel-button svg {
+.pixel-button--close {
+	--edge: #2b0906;
+	--shade: #9a2317;
+	--face: #e2462b;
+	--light: #ff9e63;
+	--glyph: #3d0c06;
+}
+
+.pixel-button--about {
+	--edge: #2a1800;
+	--shade: #7a4b00;
+	--face: #d2921a;
+	--light: #f7d270;
+	--glyph: #5a3a00;
+}
+
+.pixel-button--a {
+	--edge: #0b1533;
+	--shade: #173c8c;
+	--face: #2e6ae0;
+	--light: #7fa6f5;
+	--glyph: #fff;
+}
+
+.pixel-button--c {
+	--edge: #2b1d00;
+	--shade: #a87a00;
+	--face: #f4c20d;
+	--light: #ffe98a;
+	--glyph: #5c3d00;
+}
+
+.pixel-button > svg {
 	width: 100%;
 	height: 100%;
+}
+
+.pixel-button svg {
 	overflow: visible;
 }
 
-/* In SVG user units: one pixel of the grid. .is-hovered rather than :hover,
-   which would match a button appearing under a cursor that hasn't moved. */
+.pixel-button__glyph {
+	color: var(--glyph);
+}
+
+/* The engraved edge: the glyph again, lighter, a half cap-pixel down-right */
+.pixel-button__glyph-shade {
+	transform: translate(3.4px, 3.4px);
+}
+
+.pixel-button__glyph-shade .pixel-button__glyph {
+	color: var(--light);
+}
+
+/* Offsets in the SVG's units (viewBox 0 0 136 132). .is-hovered rather than
+   :hover, which would match a button appearing under a cursor that hasn't
+   moved. */
 .pixel-button.is-hovered .pixel-button__cap,
 .pixel-button:focus-visible .pixel-button__cap {
-	transform: translateY(2px);
+	transform: translateY(7px);
 }
 
 .pixel-button:active .pixel-button__cap,
 .pixel-button.is-pressed .pixel-button__cap {
-	transform: translateY(3px);
+	transform: translateY(15px);
 }
 
 .pixel-button:focus-visible {
