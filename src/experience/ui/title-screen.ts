@@ -1,12 +1,14 @@
 import "../../styles/menu.css";
 import "../../styles/title-screen.css";
-import { type ScheduledNote, schedule } from "../audio/ocarina-sampler.ts";
+import { type ScheduledNote, schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
 import { hasModifier } from "../input/keyboard.ts";
-import type { OcarinaButton } from "../ocarina-buttons.ts";
+import { CONTROL_ORDER, type OcarinaButton } from "../ocarina-buttons.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
+import Timeout from "../utils/timeout.ts";
 import { fragment, query } from "./dom.ts";
-import { MENU_KEYS, n64Icon } from "./menu.ts";
+import { controlLabel, MENU_KEYS, n64Icon } from "./menu.ts";
 import { headphonesIcon, triforceIcon } from "./pixel-icons.ts";
 
 const START_KEYS = new Set(["Space", "Enter", "NumpadEnter", "Escape"]);
@@ -24,13 +26,13 @@ const START_MOTIF: readonly Omit<ScheduledNote, "time">[] = [
 
 // Only the keys that are the same on every layout. WASD (ZQSD on AZERTY) is
 // shown in the settings menu, which can relabel it.
-const CONTROLS: { button: OcarinaButton; label?: string; key: string }[] = [
-	{ button: "A", label: "A button", key: "Space" },
-	{ button: "CUp", key: "↑" },
-	{ button: "CLeft", key: "←" },
-	{ button: "CDown", key: "↓" },
-	{ button: "CRight", key: "→" },
-];
+const BUTTON_KEYS: Record<OcarinaButton, string> = {
+	A: "Space",
+	CUp: "↑",
+	CLeft: "←",
+	CDown: "↓",
+	CRight: "→",
+};
 
 const TEMPLATE = /* html */ `
 <div class="title-screen" role="dialog" aria-modal="true" aria-labelledby="title-screen-title">
@@ -51,11 +53,11 @@ const TEMPLATE = /* html */ `
 	<div class="title-screen__controls">
 		<p class="title-screen__controls-label oot-text">Play with</p>
 		<ul class="title-screen__keys">
-			${CONTROLS.map(
-				({ button, label, key }) => `
+			${CONTROL_ORDER.map(
+				(button) => `
 			<li class="title-screen__key">
-				${n64Icon(button, label)}
-				<kbd class="oot-key">${key}</kbd>
+				${n64Icon(button, controlLabel(button))}
+				<kbd class="oot-key">${BUTTON_KEYS[button]}</kbd>
 			</li>`,
 			).join("")}
 		</ul>
@@ -75,9 +77,8 @@ export default class TitleScreen {
 	private readonly startButton: HTMLButtonElement;
 	private ready = false;
 	private started = false;
-	private removeTimeout = 0;
-	private readonly listeners = new AbortController();
-	private readonly unsubscribes: (() => void)[];
+	private readonly removeTimeout = new Timeout();
+	private readonly disposables = new Disposables();
 
 	constructor() {
 		const { resources, keyboard } = Experience.getInstance();
@@ -90,7 +91,7 @@ export default class TitleScreen {
 		document.documentElement.classList.add("is-title-screen");
 		keyboard.lock(this);
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		this.root.addEventListener("click", this.start, { signal });
 		// Capture phase, so the ocarina and the menus don't get the keys
 		window.addEventListener("keydown", this.handleKeydown, {
@@ -104,7 +105,7 @@ export default class TitleScreen {
 			new Promise((resolve) => window.setTimeout(resolve, FONT_TIMEOUT)),
 		]).then(() => this.root.classList.add("is-font-ready"));
 
-		this.unsubscribes = [
+		this.disposables.add(
 			listen(resources.emitter, "progress", ({ loaded, total }) =>
 				this.setProgress(loaded / total),
 			),
@@ -114,7 +115,7 @@ export default class TitleScreen {
 				this.startButton.disabled = false;
 				this.root.classList.add("is-ready");
 			}),
-		];
+		);
 	}
 
 	private setProgress(progress: number) {
@@ -137,28 +138,24 @@ export default class TitleScreen {
 		if (!this.ready || this.started) return;
 		this.started = true;
 
-		const { world, keyboard, camera } = Experience.getInstance();
-		const sampler = world.sampler;
-		if (sampler) {
-			sampler.unlock();
-			sampler.playSequence(
-				schedule(START_MOTIF, sampler.currentTime + MOTIF_DELAY),
-			);
-		}
+		const { sampler, keyboard, camera } = Experience.getInstance();
+		sampler.unlock();
+		sampler.playSequence(
+			schedule(START_MOTIF, sampler.currentTime + MOTIF_DELAY),
+		);
 
 		camera.drift();
 
-		this.listeners.abort();
+		this.disposables.dispose();
 		keyboard.unlock(this);
 		document.documentElement.classList.remove("is-title-screen");
 		this.root.classList.add("is-started");
-		this.removeTimeout = window.setTimeout(() => this.root.remove(), FADE_OUT);
+		this.removeTimeout.set(() => this.root.remove(), FADE_OUT);
 	};
 
 	destroy() {
-		window.clearTimeout(this.removeTimeout);
-		this.listeners.abort();
-		for (const unsubscribe of this.unsubscribes) unsubscribe();
+		this.removeTimeout.clear();
+		this.disposables.dispose();
 		Experience.getInstance().keyboard.unlock(this);
 		document.documentElement.classList.remove("is-title-screen");
 		this.root.remove();

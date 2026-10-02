@@ -1,6 +1,7 @@
 import mitt from "mitt";
 import Experience from "../experience.ts";
 import type { OcarinaButton } from "../ocarina-buttons.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
 import { type Song, songs } from "./songs.ts";
 
@@ -24,7 +25,7 @@ const endsWith = (
 export default class SongDetector {
 	readonly emitter = mitt<SongDetectorEvents>();
 	private history: OcarinaButton[] = [];
-	private readonly unsubscribes: (() => void)[];
+	private readonly disposables = new Disposables();
 
 	constructor() {
 		const { keyboard, settings } = Experience.getInstance();
@@ -48,14 +49,14 @@ export default class SongDetector {
 			if (!settings.values.songRecognition) this.history = [];
 		};
 
-		this.unsubscribes = [
+		this.disposables.add(
 			listen(keyboard.emitter, "noteDown", onNoteDown),
 			listen(settings.emitter, "change", onSettingsChange),
-		];
+		);
 	}
 
 	destroy() {
-		for (const unsubscribe of this.unsubscribes) unsubscribe();
+		this.disposables.dispose();
 		this.emitter.all.clear();
 	}
 }

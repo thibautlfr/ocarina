@@ -9,6 +9,16 @@ export const OCARINA_BUTTONS = [
 
 export type OcarinaButton = (typeof OCARINA_BUTTONS)[number];
 
+// The order the controls are listed in: A, then the C buttons as the arrow
+// keys sit, up above left, down, right
+export const CONTROL_ORDER: readonly OcarinaButton[] = [
+	"A",
+	"CUp",
+	"CLeft",
+	"CDown",
+	"CRight",
+];
+
 export const BUTTON_LABELS: Record<OcarinaButton, string> = {
 	A: "A",
 	CDown: "C down",

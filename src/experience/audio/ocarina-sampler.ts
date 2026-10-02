@@ -2,7 +2,10 @@ import mitt from "mitt";
 import Experience from "../experience.ts";
 import { OCARINA_BUTTONS, type OcarinaButton } from "../ocarina-buttons.ts";
 import type Settings from "../settings.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
+import type { ScheduledNote } from "./schedule.ts";
+import { addVibrato } from "./vibrato.ts";
 
 // Resource names of each button's sample (see sources.ts)
 const BUTTON_SAMPLES: Record<OcarinaButton, string> = {
@@ -15,9 +18,6 @@ const BUTTON_SAMPLES: Record<OcarinaButton, string> = {
 
 // Time constant of volume changes, in seconds
 const VOLUME_SMOOTHING = 0.02;
-// A note needs to last this long past the vibrato delay to get a vibrato
-const MIN_VIBRATO_LENGTH = 0.15;
-const VIBRATO_FADE_IN = 0.2;
 // A fading voice is stopped after twice its fade, once inaudible
 const STOP_AFTER_FADES = 2;
 
@@ -38,26 +38,6 @@ type Voice = {
 	gain: GainNode;
 };
 
-export type ScheduledNote = {
-	button: OcarinaButton;
-	// AudioContext time, in seconds
-	time: number;
-	duration: number;
-};
-
-// Places notes back to back, the first one at `start`
-export const schedule = (
-	notes: readonly Omit<ScheduledNote, "time">[],
-	start: number,
-): ScheduledNote[] => {
-	let time = start;
-	return notes.map((note) => {
-		const scheduled = { ...note, time };
-		time += note.duration;
-		return scheduled;
-	});
-};
-
 // A sequence being played. `end` is when its last note has faded.
 export type Sequence = {
 	end: number;
@@ -71,16 +51,20 @@ type SamplerEvents = {
 	noteOff: undefined;
 };
 
+// The ocarina's sound: live notes from the keyboard, replayed sequences and
+// one-shot samples. Created with the Experience, silent until the resources
+// are loaded.
 export default class OcarinaSampler {
 	readonly emitter = mitt<SamplerEvents>();
 
 	private ctx: AudioContext | null = null;
 	private masterGain: GainNode | null = null;
 	private voice: Voice | null = null;
-	private readonly buffers: Record<OcarinaButton, AudioBuffer>;
+	// Set once the resources are loaded
+	private buffers: Record<OcarinaButton, AudioBuffer> | null = null;
 	private readonly timers = new Set<number>();
 	private readonly settings: Settings;
-	private readonly unsubscribes: (() => void)[];
+	private readonly disposables = new Disposables();
 
 	private readonly params = {
 		// Output level with the volume setting at its maximum
@@ -100,27 +84,21 @@ export default class OcarinaSampler {
 		const { resources, keyboard, settings, debug } = Experience.getInstance();
 		this.settings = settings;
 
-		this.buffers = Object.fromEntries(
-			OCARINA_BUTTONS.map((button) => [
-				button,
-				resources.get<AudioBuffer>(BUTTON_SAMPLES[button]),
-			]),
-		) as Record<OcarinaButton, AudioBuffer>;
+		debug
+			.addControls("Sound", this.params, {
+				level: [0, 1, 0.01],
+				attack: [0.005, 0.5, 0.005],
+				release: [0.01, 1, 0.01],
+				crossfade: [0.005, 0.2, 0.005],
+				vibratoDelay: [0, 1, 0.01],
+				vibratoRate: [0, 12, 0.1],
+				vibratoDepth: [0, 50, 1],
+			})
+			?.onChange(({ property }) => {
+				if (property === "level") this.applyVolume();
+			});
 
-		const folder = debug.addFolder("Sound");
-		if (folder) {
-			folder
-				.add(this.params, "level", 0, 1, 0.01)
-				.onChange(() => this.applyVolume());
-			folder.add(this.params, "attack", 0.005, 0.5, 0.005);
-			folder.add(this.params, "release", 0.01, 1, 0.01);
-			folder.add(this.params, "crossfade", 0.005, 0.2, 0.005);
-			folder.add(this.params, "vibratoDelay", 0, 1, 0.01);
-			folder.add(this.params, "vibratoRate", 0, 12, 0.1);
-			folder.add(this.params, "vibratoDepth", 0, 50, 1);
-		}
-
-		this.unsubscribes = [
+		this.disposables.add(
 			listen(keyboard.emitter, "noteDown", (button) => this.play(button)),
 			// The released button is already out of `held`, whose insertion order
 			// makes the last entry the most recently pressed button still down
@@ -132,7 +110,20 @@ export default class OcarinaSampler {
 			listen(settings.emitter, "change", ({ key }) => {
 				if (key === "volume") this.applyVolume();
 			}),
-		];
+			listen(resources.emitter, "ready", () => {
+				this.buffers = Object.fromEntries(
+					OCARINA_BUTTONS.map((button) => [
+						button,
+						resources.get<AudioBuffer>(BUTTON_SAMPLES[button]),
+					]),
+				) as Record<OcarinaButton, AudioBuffer>;
+			}),
+		);
+	}
+
+	// Whether the samples are loaded: until then, nothing plays
+	get isReady(): boolean {
+		return this.buffers !== null;
 	}
 
 	// Squared, so each step of the volume gauge sounds about as big to the ear
@@ -149,8 +140,8 @@ export default class OcarinaSampler {
 		);
 	}
 
-	// Created on the first note: browsers only allow audio after a user gesture
-	private getContext(): { ctx: AudioContext; masterGain: GainNode } {
+	// Created on first use: browsers only allow audio after a user gesture
+	private ensureContext(): { ctx: AudioContext; masterGain: GainNode } {
 		if (!this.ctx || !this.masterGain) {
 			this.ctx = new AudioContext();
 			this.masterGain = new GainNode(this.ctx, { gain: this.outputGain });
@@ -164,12 +155,13 @@ export default class OcarinaSampler {
 	// Chrome and Safari also auto-suspend an idle context to save power: a
 	// sound played after a quiet stretch would be scheduled but never heard.
 	unlock() {
-		const { ctx } = this.getContext();
+		const { ctx } = this.ensureContext();
 		if (ctx.state === "suspended") ctx.resume();
 	}
 
+	// Creates the context if needed, so call it from a user gesture first
 	get currentTime(): number {
-		return this.getContext().ctx.currentTime;
+		return this.ensureContext().ctx.currentTime;
 	}
 
 	// Run a callback when the audio clock reaches `time`. Returns a cancel.
@@ -187,16 +179,17 @@ export default class OcarinaSampler {
 	}
 
 	private startVoice(
+		buffers: Record<OcarinaButton, AudioBuffer>,
 		button: OcarinaButton,
 		time: number,
 		fadeIn: number,
 	): Voice {
-		const { ctx, masterGain } = this.getContext();
+		const { ctx, masterGain } = this.ensureContext();
 
 		const gain = new GainNode(ctx, { gain: 0 });
 		gain.connect(masterGain);
 		const source = new AudioBufferSourceNode(ctx, {
-			buffer: this.buffers[button],
+			buffer: buffers[button],
 			loop: true,
 		});
 		source.connect(gain);
@@ -209,6 +202,7 @@ export default class OcarinaSampler {
 	}
 
 	private play(button: OcarinaButton) {
+		if (!this.buffers) return;
 		this.unlock();
 		const { attack, crossfade } = this.params;
 
@@ -217,6 +211,7 @@ export default class OcarinaSampler {
 		if (this.voice) this.fadeOut(this.voice, crossfade);
 
 		this.voice = this.startVoice(
+			this.buffers,
 			button,
 			this.currentTime,
 			legato ? crossfade : attack,
@@ -243,6 +238,8 @@ export default class OcarinaSampler {
 
 	// Plays the notes back to back, legato
 	playSequence(notes: readonly ScheduledNote[]): Sequence {
+		const { buffers } = this;
+		if (!buffers) return { end: this.currentTime, stop: () => {} };
 		const { attack, crossfade, release } = this.params;
 		let previous: Voice | null = null;
 		let end = this.currentTime;
@@ -254,13 +251,14 @@ export default class OcarinaSampler {
 		for (const note of notes) {
 			if (previous) this.fadeOut(previous, crossfade, note.time);
 			const voice = this.startVoice(
+				buffers,
 				note.button,
 				note.time,
 				previous ? crossfade : attack,
 			);
 			voices.add(voice);
 			voice.source.addEventListener("ended", () => voices.delete(voice));
-			const vibrato = this.addVibrato(voice, note);
+			const vibrato = this.vibratoFor(voice, note);
 			if (vibrato) vibratos.push(vibrato);
 			cancels.push(
 				this.at(note.time, () => this.emitter.emit("noteOn", note.button)),
@@ -297,7 +295,7 @@ export default class OcarinaSampler {
 	// Plays a sample once. Returns when it ends.
 	playOneShot(buffer: AudioBuffer, time: number, volume: number): number {
 		this.unlock();
-		const { ctx, masterGain } = this.getContext();
+		const { ctx, masterGain } = this.ensureContext();
 		const gain = new GainNode(ctx, { gain: volume });
 		gain.connect(masterGain);
 		const source = new AudioBufferSourceNode(ctx, { buffer });
@@ -307,29 +305,15 @@ export default class OcarinaSampler {
 		return time + buffer.duration;
 	}
 
-	// Delayed vibrato fading in, only on notes long enough to hear it
-	private addVibrato(voice: Voice, note: ScheduledNote): OscillatorNode | null {
-		const { ctx } = this.getContext();
+	private vibratoFor(voice: Voice, note: ScheduledNote) {
 		const { vibratoDelay, vibratoRate, vibratoDepth, release } = this.params;
-		if (
-			vibratoDepth === 0 ||
-			note.duration < vibratoDelay + MIN_VIBRATO_LENGTH
-		) {
-			return null;
-		}
-
-		const start = note.time + vibratoDelay;
-		const lfo = new OscillatorNode(ctx, { frequency: vibratoRate });
-		const depth = new GainNode(ctx, { gain: 0 });
-		lfo.connect(depth).connect(voice.source.detune);
-
-		depth.gain.setValueAtTime(0, start);
-		depth.gain.linearRampToValueAtTime(vibratoDepth, start + VIBRATO_FADE_IN);
-
-		lfo.start(start);
-		lfo.stop(note.time + note.duration + release * STOP_AFTER_FADES);
-		lfo.onended = () => depth.disconnect();
-		return lfo;
+		return addVibrato(
+			this.ensureContext().ctx,
+			voice.source.detune,
+			note,
+			{ delay: vibratoDelay, rate: vibratoRate, depth: vibratoDepth },
+			note.time + note.duration + release * STOP_AFTER_FADES,
+		);
 	}
 
 	private fadeOut(voice: Voice, duration: number, startTime?: number) {
@@ -351,7 +335,7 @@ export default class OcarinaSampler {
 	}
 
 	destroy() {
-		for (const unsubscribe of this.unsubscribes) unsubscribe();
+		this.disposables.dispose();
 		for (const timer of this.timers) window.clearTimeout(timer);
 		this.timers.clear();
 		this.emitter.all.clear();

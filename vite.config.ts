@@ -1,3 +1,4 @@
+/// <reference types="vitest/config" />
 import { defineConfig } from "vite";
 
 // VITE_BASE_PATH builds for a subpath (e.g. a project page on GitHub Pages);
@@ -9,5 +10,8 @@ export default defineConfig({
 	},
 	server: {
 		open: true,
+	},
+	test: {
+		environment: "happy-dom",
 	},
 });

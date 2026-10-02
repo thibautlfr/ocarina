@@ -4,6 +4,7 @@ import type { GLTF } from "three/addons";
 import type OcarinaSampler from "../audio/ocarina-sampler.ts";
 import Experience from "../experience.ts";
 import type { OcarinaButton } from "../ocarina-buttons.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
 
 // Float animation: a slow up and down bob, no rotation
@@ -58,7 +59,7 @@ export default class Ocarina {
 	private readonly pressGroup = new THREE.Group();
 	private readonly press: Pose = { ...REST };
 	private pressTimeline: gsap.core.Timeline | null = null;
-	private readonly unsubscribes: (() => void)[];
+	private readonly disposables = new Disposables();
 
 	private readonly params = {
 		front: FRONT_AZIMUTH,
@@ -89,7 +90,7 @@ export default class Ocarina {
 		this.floatGroup.add(this.facingGroup);
 		this.floatGroup.position.set(this.anchor.x, 0, this.anchor.z);
 		scene.add(this.floatGroup);
-		this.fit(size);
+		this.setSize(size);
 		this.facingGroup.rotation.y = this.facingTarget();
 
 		this.model.scene.traverse((child) => {
@@ -106,25 +107,30 @@ export default class Ocarina {
 			folder.add(this.params, "front", -Math.PI, Math.PI, 0.01);
 			folder
 				.add({ size }, "size", 0.2, 5, 0.01)
-				.onChange((v: number) => this.fit(v));
+				.onChange((v: number) => this.setSize(v));
 			folder
 				.add(this.params, "metalness", 0, 1, 0.01)
 				.onChange(() => this.applyMetalness());
-
-			const pressFolder = folder.addFolder("Press");
-			pressFolder.add(this.pressParams, "amplitude", 0, 3, 0.01);
-			pressFolder.add(this.pressParams, "attack", 0.02, 1, 0.01);
-			pressFolder.add(this.pressParams, "duration", 0.05, 2, 0.01);
-			pressFolder.add(this.pressParams, "holdReturn", 0, 1, 0.01);
-			pressFolder.add(this.pressParams, "holdCycles", 0, 8, 1);
-			pressFolder.add(this.pressParams, "holdDecay", 0, 1, 0.01);
-			pressFolder.add(this.pressParams, "release", 0.05, 2, 0.01);
 		}
+		debug.addControls(
+			"Press",
+			this.pressParams,
+			{
+				amplitude: [0, 3, 0.01],
+				attack: [0.02, 1, 0.01],
+				duration: [0.05, 2, 0.01],
+				holdReturn: [0, 1, 0.01],
+				holdCycles: [0, 8, 1],
+				holdDecay: [0, 1, 0.01],
+				release: [0.05, 2, 0.01],
+			},
+			folder,
+		);
 
-		this.unsubscribes = [
+		this.disposables.add(
 			listen(sampler.emitter, "noteOn", (button) => this.playPress(button)),
 			listen(sampler.emitter, "noteOff", () => this.releasePress()),
-		];
+		);
 	}
 
 	private forEachMaterial(
@@ -149,7 +155,7 @@ export default class Ocarina {
 	}
 
 	// Scales the model so its longest side is `size`, centered on the float group
-	private fit(size: number) {
+	private setSize(size: number) {
 		// Measured detached, so the float and press transforms don't skew the box
 		const scene = this.model.scene;
 		scene.removeFromParent();
@@ -275,7 +281,7 @@ export default class Ocarina {
 	}
 
 	destroy() {
-		for (const unsubscribe of this.unsubscribes) unsubscribe();
+		this.disposables.dispose();
 		this.stopPress();
 		this.floatGroup.removeFromParent();
 	}

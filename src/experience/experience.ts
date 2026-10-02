@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import OcarinaSampler from "./audio/ocarina-sampler.ts";
 import Camera from "./camera.ts";
 import Keyboard from "./input/keyboard.ts";
 import Renderer from "./renderer.ts";
@@ -27,25 +28,26 @@ declare global {
 export default class Experience {
 	private static instance: Experience | null = null;
 
-	canvas: HTMLCanvasElement;
-	sizes: Sizes;
-	scene: THREE.Scene;
-	camera: Camera;
-	renderer: Renderer;
-	world: World;
-	settingsMenu: SettingsMenu;
-	songBook: SongBook;
-	aboutMenu: AboutMenu;
-	completion: Completion;
-	touchControls: TouchControls;
-	titleScreen: TitleScreen;
-	debug: Debug;
-	settings: Settings;
-	time: Time;
-	keyboard: Keyboard;
-	songDetector: SongDetector;
-	songProgress: SongProgress;
-	resources: Resources;
+	readonly canvas: HTMLCanvasElement;
+	readonly sizes: Sizes;
+	readonly scene: THREE.Scene;
+	readonly camera: Camera;
+	readonly renderer: Renderer;
+	readonly world: World;
+	readonly settingsMenu: SettingsMenu;
+	readonly songBook: SongBook;
+	readonly aboutMenu: AboutMenu;
+	readonly completion: Completion;
+	readonly touchControls: TouchControls;
+	readonly titleScreen: TitleScreen;
+	readonly debug: Debug;
+	readonly settings: Settings;
+	readonly time: Time;
+	readonly keyboard: Keyboard;
+	readonly songDetector: SongDetector;
+	readonly songProgress: SongProgress;
+	readonly resources: Resources;
+	readonly sampler: OcarinaSampler;
 
 	static getInstance(canvas?: HTMLCanvasElement): Experience {
 		if (Experience.instance) return Experience.instance;
@@ -68,6 +70,7 @@ export default class Experience {
 		this.songProgress = new SongProgress();
 		this.scene = new THREE.Scene();
 		this.resources = new Resources(sources);
+		this.sampler = new OcarinaSampler();
 		this.camera = new Camera();
 		this.renderer = new Renderer();
 		this.world = new World();
@@ -115,6 +118,7 @@ export default class Experience {
 		this.keyboard.destroy();
 		this.sizes.destroy();
 		this.world.destroy();
+		this.sampler.destroy();
 		this.camera.destroy();
 		this.renderer.destroy();
 		this.settings.destroy();

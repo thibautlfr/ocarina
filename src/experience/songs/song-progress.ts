@@ -1,5 +1,6 @@
 import mitt from "mitt";
 import Experience from "../experience.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
 import { loadJson, saveJson } from "../utils/storage.ts";
 import { type Song, songs } from "./songs.ts";
@@ -28,7 +29,7 @@ export default class SongProgress {
 	readonly emitter = mitt<SongProgressEvents>();
 	private readonly learned: Set<string>;
 	private readonly unseen: Set<string>;
-	private readonly unsubscribe: () => void;
+	private readonly disposables = new Disposables();
 
 	constructor() {
 		const { songDetector, debug } = Experience.getInstance();
@@ -36,7 +37,9 @@ export default class SongProgress {
 		this.learned = new Set(songNames(stored.learned));
 		this.unseen = new Set(songNames(stored.unseen));
 
-		this.unsubscribe = listen(songDetector.emitter, "songPlayed", this.learn);
+		this.disposables.add(
+			listen(songDetector.emitter, "songPlayed", this.learn),
+		);
 
 		const folder = debug.addFolder("Song progress");
 		if (folder) {
@@ -94,7 +97,7 @@ export default class SongProgress {
 	}
 
 	destroy() {
-		this.unsubscribe();
+		this.disposables.dispose();
 		this.emitter.all.clear();
 	}
 }

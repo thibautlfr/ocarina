@@ -1,7 +1,8 @@
 import "../../styles/menu.css";
 import "../../styles/about-menu.css";
+import { playMenuSound } from "../audio/menu-sounds.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
-import Menu, { CLOSE_BUTTON, type MenuAction, playMenuSound } from "./menu.ts";
+import Menu, { CLOSE_BUTTON, type MenuAction } from "./menu.ts";
 import infoGlyph from "./pixel/glyphs/info.svg?raw";
 import { pixelButton } from "./pixel-button.ts";
 import { githubIcon, linkedinIcon, xLogoIcon } from "./pixel-icons.ts";
@@ -124,7 +125,7 @@ export default class AboutMenu extends Menu {
 		this.selectedItems = this.rows.map(() => 0);
 		document.body.append(content);
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		this.items.forEach((links, row) => {
 			links.forEach((item, index) => {
 				item.addEventListener(
@@ -200,15 +201,16 @@ export default class AboutMenu extends Menu {
 
 	private selectItem(row: number, index: number, focus = true) {
 		this.selectedItems[row] = index;
-		if (row !== this.selectedRow) super.selectRow(row, false);
-		this.renderItems();
-		if (focus) this.item.focus({ preventScroll: true });
+		this.selectRow(row, focus);
 	}
 
-	protected override selectRow(index: number, focus = true) {
-		super.selectRow(index, false);
+	protected override onRowSelected() {
 		this.renderItems();
-		if (focus) this.item.focus({ preventScroll: true });
+	}
+
+	// The selected link of the row, rather than the row
+	protected override focusTarget(): HTMLElement {
+		return this.item;
 	}
 
 	private renderItems() {

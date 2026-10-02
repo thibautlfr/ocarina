@@ -1,6 +1,8 @@
+import { playMenuSound } from "../audio/menu-sounds.ts";
 import Experience from "../experience.ts";
 import { hasModifier } from "../input/keyboard.ts";
 import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
+import Disposables from "../utils/disposables.ts";
 import { query, queryAll, trackHover } from "./dom.ts";
 import crossGlyph from "./pixel/glyphs/cross.svg?raw";
 import { pixelButton } from "./pixel-button.ts";
@@ -30,26 +32,6 @@ export const MENU_KEYS: Record<string, MenuAction> = {
 	Backspace: "back",
 };
 
-// Volume of each menu sound, by resource name
-const MENU_SOUND_VOLUME = {
-	menuOpen: 0.55,
-	menuClose: 0.55,
-	menuSelect: 0.4,
-} as const;
-type MenuSound = keyof typeof MENU_SOUND_VOLUME;
-
-// Silent until the sampler exists, i.e. until resources are loaded
-export const playMenuSound = (name: MenuSound) => {
-	const { world, resources } = Experience.getInstance();
-	const sampler = world.sampler;
-	if (!sampler) return;
-	sampler.playOneShot(
-		resources.get<AudioBuffer>(name),
-		sampler.currentTime,
-		MENU_SOUND_VOLUME[name],
-	);
-};
-
 const N64_CLASSES: Record<OcarinaButton, string> = {
 	A: "n64--a",
 	CDown: "n64--c n64--c-down",
@@ -62,6 +44,10 @@ const N64_CLASSES: Record<OcarinaButton, string> = {
 export const n64Icon = (button: OcarinaButton, label = BUTTON_LABELS[button]) =>
 	`<span class="n64 ${N64_CLASSES[button]}" role="img" aria-label="${label}">${button === "A" ? "A" : ""}</span>`;
 
+// The label of a button's icon in the lists of controls
+export const controlLabel = (button: OcarinaButton) =>
+	button === "A" ? "A button" : BUTTON_LABELS[button];
+
 // A full-screen <dialog> with a cursor over its `data-row` slabs, driven by
 // the ocarina keys or the mouse. It closes with its close button, Esc,
 // Backspace or a click outside the panel. The keyboard is locked while open.
@@ -73,20 +59,21 @@ export default abstract class Menu {
 	protected readonly rows: HTMLElement[];
 	// Kept between openings
 	protected selectedRow: number;
-	protected readonly listeners = new AbortController();
+	protected readonly disposables = new Disposables();
 
+	// The cursor starts on the row named `initialRow`, or the first one
 	constructor(
 		toggle: HTMLButtonElement,
 		dialog: HTMLDialogElement,
-		selectedRow = 0,
+		initialRow?: string,
 	) {
 		this.toggle = toggle;
 		this.dialog = dialog;
 		this.closeButton = query(dialog, ".menu__close");
 		this.rows = queryAll(dialog, "[data-row]");
-		this.selectedRow = selectedRow;
+		this.selectedRow = initialRow ? this.rowIndex(initialRow) : 0;
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 
 		this.addToggle(toggle);
 		this.closeButton.addEventListener("click", () => dialog.close(), {
@@ -121,7 +108,7 @@ export default abstract class Menu {
 	// Another button that opens the menu
 	protected addToggle(button: HTMLButtonElement) {
 		this.toggles.push(button);
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		button.addEventListener(
 			"click",
 			() => {
@@ -156,6 +143,12 @@ export default abstract class Menu {
 		return this.rows[this.selectedRow].dataset.row;
 	}
 
+	protected rowIndex(name: string): number {
+		const index = this.rows.findIndex((row) => row.dataset.row === name);
+		if (index < 0) throw new Error(`Menu row not found: ${name}`);
+		return index;
+	}
+
 	protected selectRow(index: number, focus = true) {
 		const count = this.rows.length;
 		this.selectedRow = (index + count) % count;
@@ -163,10 +156,16 @@ export default abstract class Menu {
 		for (const other of this.rows) {
 			other.classList.toggle("is-selected", other === row);
 		}
-		if (focus) {
-			const target = row.querySelector<HTMLElement>("[data-focus]") ?? row;
-			target.focus({ preventScroll: true });
-		}
+		this.onRowSelected();
+		if (focus) this.focusTarget(row).focus({ preventScroll: true });
+	}
+
+	// Called whenever a row is selected, even the one already selected
+	protected onRowSelected() {}
+
+	// What gets the focus when `row` is selected
+	protected focusTarget(row: HTMLElement): HTMLElement {
+		return row.querySelector<HTMLElement>("[data-focus]") ?? row;
 	}
 
 	// "back" is handled here: it closes the menu
@@ -210,7 +209,7 @@ export default abstract class Menu {
 
 	destroy() {
 		if (this.dialog.open) this.dialog.close();
-		this.listeners.abort();
+		this.disposables.dispose();
 		Experience.getInstance().keyboard.unlock(this);
 		for (const toggle of this.toggles) toggle.remove();
 		this.dialog.remove();
