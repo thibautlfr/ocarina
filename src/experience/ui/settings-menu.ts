@@ -2,11 +2,16 @@ import "../../styles/menu.css";
 import "../../styles/settings-menu.css";
 import { playMenuSound } from "../audio/menu-sounds.ts";
 import Experience from "../experience.ts";
-import type { OcarinaButton } from "../ocarina-buttons.ts";
+import { CONTROL_ORDER, type OcarinaButton } from "../ocarina-buttons.ts";
 import { songs } from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
-import Menu, { CLOSE_BUTTON, type MenuAction, n64Icon } from "./menu.ts";
+import Menu, {
+	CLOSE_BUTTON,
+	controlLabel,
+	type MenuAction,
+	n64Icon,
+} from "./menu.ts";
 import gearGlyph from "./pixel/glyphs/gear.svg?raw";
 import { pixelButton } from "./pixel-button.ts";
 
@@ -24,14 +29,14 @@ type LayoutNavigator = Navigator & {
 const key = (label: string, code?: string) =>
 	`<kbd class="oot-key"${code ? ` data-code="${code}"` : ""}>${label}</kbd>`;
 
-// Each ocarina button and its keys, in the order players expect: Space, then W A S D
-const CONTROLS: { button: OcarinaButton; label?: string; keys: string[] }[] = [
-	{ button: "A", label: "A button", keys: [key("Space")] },
-	{ button: "CUp", keys: [key("W", "KeyW"), key("↑")] },
-	{ button: "CLeft", keys: [key("A", "KeyA"), key("←")] },
-	{ button: "CDown", keys: [key("S", "KeyS"), key("↓")] },
-	{ button: "CRight", keys: [key("D", "KeyD"), key("→")] },
-];
+// The keys of each ocarina button
+const BUTTON_KEYS: Record<OcarinaButton, string[]> = {
+	A: [key("Space")],
+	CUp: [key("W", "KeyW"), key("↑")],
+	CLeft: [key("A", "KeyA"), key("←")],
+	CDown: [key("S", "KeyS"), key("↓")],
+	CRight: [key("D", "KeyD"), key("→")],
+};
 
 const TEMPLATE = /* html */ `
 <button class="pixel-button menu-toggle" type="button" aria-label="Settings" title="Settings (Esc)" aria-haspopup="dialog" aria-controls="settings-menu">
@@ -69,11 +74,11 @@ const TEMPLATE = /* html */ `
 			<li class="slab slab--controls">
 				<span class="slab__label oot-text" id="menu-controls-label">Controls</span>
 				<ul class="note-keys" aria-labelledby="menu-controls-label">
-					${CONTROLS.map(
-						({ button, label, keys }) => `
+					${CONTROL_ORDER.map(
+						(button) => `
 					<li class="note-keys__item">
-						${n64Icon(button, label)}
-						<span class="note-keys__keys">${keys.join("")}</span>
+						${n64Icon(button, controlLabel(button))}
+						<span class="note-keys__keys">${BUTTON_KEYS[button].join("")}</span>
 					</li>`,
 					).join("")}
 				</ul>
@@ -208,8 +213,7 @@ export default class SettingsMenu extends Menu {
 		}
 	}
 
-	protected override selectRow(index: number, focus = true) {
-		super.selectRow(index, focus);
+	protected override onRowSelected() {
 		if (this.row !== "songProgress") this.cancelErase();
 	}
 

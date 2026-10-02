@@ -97,8 +97,11 @@ export default class SongBook extends Menu {
 
 	constructor() {
 		const content = fragment(TEMPLATE);
-		// The cursor starts on the songs row
-		super(query(content, ".song-book-toggle"), query(content, ".song-book"), 1);
+		super(
+			query(content, ".song-book-toggle"),
+			query(content, ".song-book"),
+			"songs",
+		);
 		this.badge = query(this.toggle, ".song-book-toggle__badge");
 		this.gameSwitch = query(this.dialog, ".song-book__games");
 		this.shelves = query(this.dialog, ".song-book__shelves");
@@ -106,7 +109,7 @@ export default class SongBook extends Menu {
 		this.staffNotes = query(this.dialog, ".staff__notes");
 		document.body.append(content);
 
-		this.hint = new SongHint(this.toggle);
+		this.hint = new SongHint(this.toggle, () => this.isOpen);
 		this.addToggle(this.hint.button);
 		this.learned = new SongLearned();
 
@@ -253,7 +256,7 @@ export default class SongBook extends Menu {
 	private selectNote(shelf: number, note: number) {
 		const clamped = Math.min(note, this.book[shelf].length - 1);
 		if (this.dialog.open && this.row !== "songs") {
-			this.selectRow(this.rows.findIndex((r) => r.dataset.row === "songs"));
+			this.selectRow(this.rowIndex("songs"));
 		}
 		if (shelf === this.cursor.shelf && clamped === this.cursor.note) return;
 		this.cursors[this.game] = { shelf, note: clamped };

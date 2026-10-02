@@ -22,14 +22,16 @@ const TEMPLATE = /* html */ `
 export default class SongHint {
 	readonly button: HTMLButtonElement;
 	private readonly bookToggle: HTMLElement;
+	private readonly isBookOpen: () => boolean;
 	private readonly showTimeout = new Timeout();
 	private readonly hideTimeout = new Timeout();
 	private done = false;
 	private unwaitNote: (() => void) | null = null;
 	private readonly disposables = new Disposables();
 
-	constructor(bookToggle: HTMLElement) {
+	constructor(bookToggle: HTMLElement, isBookOpen: () => boolean) {
 		this.bookToggle = bookToggle;
+		this.isBookOpen = isBookOpen;
 		const content = fragment(TEMPLATE);
 		this.button = query(content, ".song-hint");
 		document.body.append(content);
@@ -54,12 +56,12 @@ export default class SongHint {
 	}
 
 	private show() {
-		const { songProgress, settings, songBook } = Experience.getInstance();
+		const { songProgress, settings } = Experience.getInstance();
 		const canShow =
 			!this.done &&
 			songProgress.learnedCount === 0 &&
 			settings.values.songRecognition &&
-			!songBook.isOpen;
+			!this.isBookOpen();
 		if (!canShow) return;
 
 		this.done = true;

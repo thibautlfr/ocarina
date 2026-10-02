@@ -201,15 +201,16 @@ export default class AboutMenu extends Menu {
 
 	private selectItem(row: number, index: number, focus = true) {
 		this.selectedItems[row] = index;
-		if (row !== this.selectedRow) super.selectRow(row, false);
-		this.renderItems();
-		if (focus) this.item.focus({ preventScroll: true });
+		this.selectRow(row, focus);
 	}
 
-	protected override selectRow(index: number, focus = true) {
-		super.selectRow(index, false);
+	protected override onRowSelected() {
 		this.renderItems();
-		if (focus) this.item.focus({ preventScroll: true });
+	}
+
+	// The selected link of the row, rather than the row
+	protected override focusTarget(): HTMLElement {
+		return this.item;
 	}
 
 	private renderItems() {

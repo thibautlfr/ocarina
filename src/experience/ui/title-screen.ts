@@ -3,12 +3,12 @@ import "../../styles/title-screen.css";
 import { type ScheduledNote, schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
 import { hasModifier } from "../input/keyboard.ts";
-import type { OcarinaButton } from "../ocarina-buttons.ts";
+import { CONTROL_ORDER, type OcarinaButton } from "../ocarina-buttons.ts";
 import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
 import Timeout from "../utils/timeout.ts";
 import { fragment, query } from "./dom.ts";
-import { MENU_KEYS, n64Icon } from "./menu.ts";
+import { controlLabel, MENU_KEYS, n64Icon } from "./menu.ts";
 import { headphonesIcon, triforceIcon } from "./pixel-icons.ts";
 
 const START_KEYS = new Set(["Space", "Enter", "NumpadEnter", "Escape"]);
@@ -26,13 +26,13 @@ const START_MOTIF: readonly Omit<ScheduledNote, "time">[] = [
 
 // Only the keys that are the same on every layout. WASD (ZQSD on AZERTY) is
 // shown in the settings menu, which can relabel it.
-const CONTROLS: { button: OcarinaButton; label?: string; key: string }[] = [
-	{ button: "A", label: "A button", key: "Space" },
-	{ button: "CUp", key: "↑" },
-	{ button: "CLeft", key: "←" },
-	{ button: "CDown", key: "↓" },
-	{ button: "CRight", key: "→" },
-];
+const BUTTON_KEYS: Record<OcarinaButton, string> = {
+	A: "Space",
+	CUp: "↑",
+	CLeft: "←",
+	CDown: "↓",
+	CRight: "→",
+};
 
 const TEMPLATE = /* html */ `
 <div class="title-screen" role="dialog" aria-modal="true" aria-labelledby="title-screen-title">
@@ -53,11 +53,11 @@ const TEMPLATE = /* html */ `
 	<div class="title-screen__controls">
 		<p class="title-screen__controls-label oot-text">Play with</p>
 		<ul class="title-screen__keys">
-			${CONTROLS.map(
-				({ button, label, key }) => `
+			${CONTROL_ORDER.map(
+				(button) => `
 			<li class="title-screen__key">
-				${n64Icon(button, label)}
-				<kbd class="oot-key">${key}</kbd>
+				${n64Icon(button, controlLabel(button))}
+				<kbd class="oot-key">${BUTTON_KEYS[button]}</kbd>
 			</li>`,
 			).join("")}
 		</ul>

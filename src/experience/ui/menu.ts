@@ -44,6 +44,10 @@ const N64_CLASSES: Record<OcarinaButton, string> = {
 export const n64Icon = (button: OcarinaButton, label = BUTTON_LABELS[button]) =>
 	`<span class="n64 ${N64_CLASSES[button]}" role="img" aria-label="${label}">${button === "A" ? "A" : ""}</span>`;
 
+// The label of a button's icon in the lists of controls
+export const controlLabel = (button: OcarinaButton) =>
+	button === "A" ? "A button" : BUTTON_LABELS[button];
+
 // A full-screen <dialog> with a cursor over its `data-row` slabs, driven by
 // the ocarina keys or the mouse. It closes with its close button, Esc,
 // Backspace or a click outside the panel. The keyboard is locked while open.
@@ -57,16 +61,17 @@ export default abstract class Menu {
 	protected selectedRow: number;
 	protected readonly disposables = new Disposables();
 
+	// The cursor starts on the row named `initialRow`, or the first one
 	constructor(
 		toggle: HTMLButtonElement,
 		dialog: HTMLDialogElement,
-		selectedRow = 0,
+		initialRow?: string,
 	) {
 		this.toggle = toggle;
 		this.dialog = dialog;
 		this.closeButton = query(dialog, ".menu__close");
 		this.rows = queryAll(dialog, "[data-row]");
-		this.selectedRow = selectedRow;
+		this.selectedRow = initialRow ? this.rowIndex(initialRow) : 0;
 
 		const { signal } = this.disposables;
 
@@ -138,6 +143,12 @@ export default abstract class Menu {
 		return this.rows[this.selectedRow].dataset.row;
 	}
 
+	protected rowIndex(name: string): number {
+		const index = this.rows.findIndex((row) => row.dataset.row === name);
+		if (index < 0) throw new Error(`Menu row not found: ${name}`);
+		return index;
+	}
+
 	protected selectRow(index: number, focus = true) {
 		const count = this.rows.length;
 		this.selectedRow = (index + count) % count;
@@ -145,10 +156,16 @@ export default abstract class Menu {
 		for (const other of this.rows) {
 			other.classList.toggle("is-selected", other === row);
 		}
-		if (focus) {
-			const target = row.querySelector<HTMLElement>("[data-focus]") ?? row;
-			target.focus({ preventScroll: true });
-		}
+		this.onRowSelected();
+		if (focus) this.focusTarget(row).focus({ preventScroll: true });
+	}
+
+	// Called whenever a row is selected, even the one already selected
+	protected onRowSelected() {}
+
+	// What gets the focus when `row` is selected
+	protected focusTarget(row: HTMLElement): HTMLElement {
+		return row.querySelector<HTMLElement>("[data-focus]") ?? row;
 	}
 
 	// "back" is handled here: it closes the menu
