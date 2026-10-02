@@ -1,0 +1,39 @@
+name: An idea, or something that lost me
+description: A suggestion, or a moment where you did not know what to do next.
+title: "[Idea] "
+labels: ["idea"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nothing has to be broken for this to be worth writing. If you put the ocarina down
+        without playing a song, that is exactly what I want to hear about.
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: What you have in mind
+      description: An idea to add, something to change, or the moment you got stuck or gave up.
+      placeholder: I played notes for a while but never realized there were songs to find.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: What kind of thing is this?
+      options:
+        - I did not know what to do next
+        - Something felt off, without being a bug
+        - An idea for something new
+        - A question about the project
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: What were you playing on?
+      placeholder: Phone, laptop, big screen…
+    validations:
+      required: false
