@@ -95,7 +95,6 @@ export default class SettingsMenu extends Menu {
 	// The answer being picked while erasing asks for confirmation
 	private erase: "yes" | "no" | null = null;
 	private lastVolumeSound = 0;
-	private readonly unsubscribes: (() => void)[];
 
 	constructor() {
 		const content = fragment(TEMPLATE);
@@ -107,7 +106,7 @@ export default class SettingsMenu extends Menu {
 		this.eraseButton = query(this.dialog, ".progress-erase");
 		document.body.append(content);
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		window.addEventListener("keydown", this.handleWindowKeydown, { signal });
 
 		this.volume.addEventListener(
@@ -144,10 +143,10 @@ export default class SettingsMenu extends Menu {
 		);
 
 		const { settings, songProgress } = Experience.getInstance();
-		this.unsubscribes = [
+		this.disposables.add(
 			listen(settings.emitter, "change", () => this.render()),
 			listen(songProgress.emitter, "change", () => this.render()),
-		];
+		);
 
 		this.render();
 		this.showLayoutKeys();
@@ -321,10 +320,5 @@ export default class SettingsMenu extends Menu {
 		} catch {
 			// Not allowed here (e.g. in an iframe): keep WASD
 		}
-	}
-
-	override destroy() {
-		super.destroy();
-		for (const unsubscribe of this.unsubscribes) unsubscribe();
 	}
 }

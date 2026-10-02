@@ -1,6 +1,7 @@
 import "../../styles/touch-controls.css";
 import Experience from "../experience.ts";
 import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
 import { fragment, query, queryAll } from "./dom.ts";
 import arrowGlyph from "./pixel/glyphs/arrow-right.svg?raw";
@@ -41,8 +42,7 @@ export default class TouchControls {
 	private readonly buttons: Record<OcarinaButton, HTMLElement>;
 	// The button each finger is on, by pointer id
 	private readonly fingers = new Map<number, HTMLElement>();
-	private readonly listeners = new AbortController();
-	private readonly unsubscribes: (() => void)[];
+	private readonly disposables = new Disposables();
 
 	constructor() {
 		const { keyboard } = Experience.getInstance();
@@ -57,7 +57,7 @@ export default class TouchControls {
 		) as Record<OcarinaButton, HTMLElement>;
 		document.body.append(content);
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		const on = <K extends keyof HTMLElementEventMap>(
 			type: K,
 			handler: (e: HTMLElementEventMap[K]) => void,
@@ -74,7 +74,7 @@ export default class TouchControls {
 		// touch end stops its double-tap zoom, pointer events still fire
 		on("touchend", (e) => e.preventDefault(), { passive: false });
 
-		this.unsubscribes = [
+		this.disposables.add(
 			// Also shows presses from the physical keys
 			listen(keyboard.emitter, "noteDown", (button) => {
 				this.buttons[button].classList.add("is-pressed");
@@ -90,7 +90,7 @@ export default class TouchControls {
 					button.setAttribute("aria-disabled", String(locked));
 				}
 			}),
-		];
+		);
 	}
 
 	private handlePointerDown = (e: PointerEvent) => {
@@ -138,8 +138,7 @@ export default class TouchControls {
 			keyboard.release(inputId(pointerId));
 		}
 		this.fingers.clear();
-		this.listeners.abort();
-		for (const unsubscribe of this.unsubscribes) unsubscribe();
+		this.disposables.dispose();
 		this.root.remove();
 	}
 }

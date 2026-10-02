@@ -2,6 +2,7 @@ import mitt from "mitt";
 import Experience from "../experience.ts";
 import { OCARINA_BUTTONS, type OcarinaButton } from "../ocarina-buttons.ts";
 import type Settings from "../settings.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
 import type { ScheduledNote } from "./schedule.ts";
 import { addVibrato } from "./vibrato.ts";
@@ -63,7 +64,7 @@ export default class OcarinaSampler {
 	private buffers: Record<OcarinaButton, AudioBuffer> | null = null;
 	private readonly timers = new Set<number>();
 	private readonly settings: Settings;
-	private readonly unsubscribes: (() => void)[];
+	private readonly disposables = new Disposables();
 
 	private readonly params = {
 		// Output level with the volume setting at its maximum
@@ -96,7 +97,7 @@ export default class OcarinaSampler {
 			folder.add(this.params, "vibratoDepth", 0, 50, 1);
 		}
 
-		this.unsubscribes = [
+		this.disposables.add(
 			listen(keyboard.emitter, "noteDown", (button) => this.play(button)),
 			// The released button is already out of `held`, whose insertion order
 			// makes the last entry the most recently pressed button still down
@@ -116,7 +117,7 @@ export default class OcarinaSampler {
 					]),
 				) as Record<OcarinaButton, AudioBuffer>;
 			}),
-		];
+		);
 	}
 
 	// Whether the samples are loaded: until then, nothing plays
@@ -333,7 +334,7 @@ export default class OcarinaSampler {
 	}
 
 	destroy() {
-		for (const unsubscribe of this.unsubscribes) unsubscribe();
+		this.disposables.dispose();
 		for (const timer of this.timers) window.clearTimeout(timer);
 		this.timers.clear();
 		this.emitter.all.clear();

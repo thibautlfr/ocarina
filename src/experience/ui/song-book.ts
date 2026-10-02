@@ -94,7 +94,6 @@ export default class SongBook extends Menu {
 	private demoCancels: (() => void)[] = [];
 	// Bumped whenever the staff is redrawn, so a playing demo stops lighting it
 	private staffVersion = 0;
-	private readonly unsubscribe: () => void;
 
 	constructor() {
 		const content = fragment(TEMPLATE);
@@ -111,7 +110,7 @@ export default class SongBook extends Menu {
 		this.addToggle(this.hint.button);
 		this.learned = new SongLearned();
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		this.gameSwitch.addEventListener(
 			"click",
 			(e) => {
@@ -142,8 +141,8 @@ export default class SongBook extends Menu {
 		);
 
 		const { songProgress } = Experience.getInstance();
-		this.unsubscribe = listen(songProgress.emitter, "change", () =>
-			this.renderProgress(),
+		this.disposables.add(
+			listen(songProgress.emitter, "change", () => this.renderProgress()),
 		);
 
 		this.renderGame();
@@ -381,6 +380,5 @@ export default class SongBook extends Menu {
 		super.destroy();
 		this.hint.destroy();
 		this.learned.destroy();
-		this.unsubscribe();
 	}
 }

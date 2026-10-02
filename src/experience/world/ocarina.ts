@@ -4,6 +4,7 @@ import type { GLTF } from "three/addons";
 import type OcarinaSampler from "../audio/ocarina-sampler.ts";
 import Experience from "../experience.ts";
 import type { OcarinaButton } from "../ocarina-buttons.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
 
 // Float animation: a slow up and down bob, no rotation
@@ -58,7 +59,7 @@ export default class Ocarina {
 	private readonly pressGroup = new THREE.Group();
 	private readonly press: Pose = { ...REST };
 	private pressTimeline: gsap.core.Timeline | null = null;
-	private readonly unsubscribes: (() => void)[];
+	private readonly disposables = new Disposables();
 
 	private readonly params = {
 		front: FRONT_AZIMUTH,
@@ -121,10 +122,10 @@ export default class Ocarina {
 			pressFolder.add(this.pressParams, "release", 0.05, 2, 0.01);
 		}
 
-		this.unsubscribes = [
+		this.disposables.add(
 			listen(sampler.emitter, "noteOn", (button) => this.playPress(button)),
 			listen(sampler.emitter, "noteOff", () => this.releasePress()),
-		];
+		);
 	}
 
 	private forEachMaterial(
@@ -275,7 +276,7 @@ export default class Ocarina {
 	}
 
 	destroy() {
-		for (const unsubscribe of this.unsubscribes) unsubscribe();
+		this.disposables.dispose();
 		this.stopPress();
 		this.floatGroup.removeFromParent();
 	}

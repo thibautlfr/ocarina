@@ -125,7 +125,7 @@ export default class AboutMenu extends Menu {
 		this.selectedItems = this.rows.map(() => 0);
 		document.body.append(content);
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		this.items.forEach((links, row) => {
 			links.forEach((item, index) => {
 				item.addEventListener(

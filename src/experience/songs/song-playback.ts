@@ -1,6 +1,7 @@
 import type OcarinaSampler from "../audio/ocarina-sampler.ts";
 import { schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
 import { noteDurations, type Song } from "./songs.ts";
 
@@ -11,7 +12,7 @@ export default class SongPlayback {
 	private readonly sampler: OcarinaSampler;
 	private readonly jingle: AudioBuffer;
 	private playing = false;
-	private readonly unsubscribe: () => void;
+	private readonly disposables = new Disposables();
 
 	private readonly params = {
 		// The song's last note rings this long, then fades under the jingle
@@ -41,8 +42,8 @@ export default class SongPlayback {
 			folder.add(this.params, "tempo", 0.5, 2, 0.05);
 		}
 
-		this.unsubscribe = listen(songDetector.emitter, "songPlayed", (song) =>
-			this.perform(song),
+		this.disposables.add(
+			listen(songDetector.emitter, "songPlayed", (song) => this.perform(song)),
 		);
 	}
 
@@ -77,7 +78,7 @@ export default class SongPlayback {
 	}
 
 	destroy() {
-		this.unsubscribe();
+		this.disposables.dispose();
 		// The sampler cancels its pending callbacks, so unlock here
 		Experience.getInstance().keyboard.unlock(this);
 	}

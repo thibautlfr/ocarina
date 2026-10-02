@@ -2,6 +2,7 @@ import { playMenuSound } from "../audio/menu-sounds.ts";
 import Experience from "../experience.ts";
 import { hasModifier } from "../input/keyboard.ts";
 import { BUTTON_LABELS, type OcarinaButton } from "../ocarina-buttons.ts";
+import Disposables from "../utils/disposables.ts";
 import { query, queryAll, trackHover } from "./dom.ts";
 import crossGlyph from "./pixel/glyphs/cross.svg?raw";
 import { pixelButton } from "./pixel-button.ts";
@@ -54,7 +55,7 @@ export default abstract class Menu {
 	protected readonly rows: HTMLElement[];
 	// Kept between openings
 	protected selectedRow: number;
-	protected readonly listeners = new AbortController();
+	protected readonly disposables = new Disposables();
 
 	constructor(
 		toggle: HTMLButtonElement,
@@ -67,7 +68,7 @@ export default abstract class Menu {
 		this.rows = queryAll(dialog, "[data-row]");
 		this.selectedRow = selectedRow;
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 
 		this.addToggle(toggle);
 		this.closeButton.addEventListener("click", () => dialog.close(), {
@@ -102,7 +103,7 @@ export default abstract class Menu {
 	// Another button that opens the menu
 	protected addToggle(button: HTMLButtonElement) {
 		this.toggles.push(button);
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		button.addEventListener(
 			"click",
 			() => {
@@ -191,7 +192,7 @@ export default abstract class Menu {
 
 	destroy() {
 		if (this.dialog.open) this.dialog.close();
-		this.listeners.abort();
+		this.disposables.dispose();
 		Experience.getInstance().keyboard.unlock(this);
 		for (const toggle of this.toggles) toggle.remove();
 		this.dialog.remove();

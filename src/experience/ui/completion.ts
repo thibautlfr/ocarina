@@ -3,7 +3,9 @@ import "../../styles/toast.css";
 import "../../styles/completion.css";
 import Experience from "../experience.ts";
 import { songs } from "../songs/songs.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
+import Timeout from "../utils/timeout.ts";
 import { fragment, query } from "./dom.ts";
 import { triforceIcon } from "./pixel-icons.ts";
 import { ShareButton } from "./share.ts";
@@ -29,11 +31,10 @@ const TEMPLATE = /* html */ `
 export default class Completion {
 	private readonly banner: HTMLElement;
 	private readonly shareButton: ShareButton;
-	private hideTimeout = 0;
-	private showTimeout = 0;
+	private readonly showTimeout = new Timeout();
+	private readonly hideTimeout = new Timeout();
 	private unwaitLock: (() => void) | null = null;
-	private readonly listeners = new AbortController();
-	private readonly unsubscribe: () => void;
+	private readonly disposables = new Disposables();
 
 	constructor() {
 		const content = fragment(TEMPLATE);
@@ -44,7 +45,7 @@ export default class Completion {
 		});
 		document.body.append(content);
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		this.banner.addEventListener("pointerenter", () => this.hold(), { signal });
 		this.banner.addEventListener("focusin", () => this.hold(), { signal });
 		this.banner.addEventListener(
@@ -57,8 +58,8 @@ export default class Completion {
 		});
 
 		const { songProgress } = Experience.getInstance();
-		this.unsubscribe = listen(songProgress.emitter, "complete", () =>
-			this.start(),
+		this.disposables.add(
+			listen(songProgress.emitter, "complete", () => this.start()),
 		);
 	}
 
@@ -80,8 +81,7 @@ export default class Completion {
 
 	private celebrate() {
 		const duration = Experience.getInstance().world.celebrate();
-		window.clearTimeout(this.showTimeout);
-		this.showTimeout = window.setTimeout(
+		this.showTimeout.set(
 			() => this.show(),
 			Math.max(0, duration - BANNER_LEAD) * 1000,
 		);
@@ -93,24 +93,22 @@ export default class Completion {
 	}
 
 	private hide(delay: number) {
-		window.clearTimeout(this.hideTimeout);
-		this.hideTimeout = window.setTimeout(
+		this.hideTimeout.set(
 			() => this.banner.classList.remove("is-visible"),
 			delay,
 		);
 	}
 
 	private hold() {
-		window.clearTimeout(this.hideTimeout);
+		this.hideTimeout.clear();
 	}
 
 	destroy() {
-		this.unsubscribe();
+		this.disposables.dispose();
 		this.unwaitLock?.();
-		this.listeners.abort();
 		this.shareButton.destroy();
-		window.clearTimeout(this.showTimeout);
-		window.clearTimeout(this.hideTimeout);
+		this.showTimeout.clear();
+		this.hideTimeout.clear();
 		this.banner.remove();
 	}
 }

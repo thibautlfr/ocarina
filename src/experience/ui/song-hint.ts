@@ -1,7 +1,9 @@
 import "../../styles/menu.css";
 import "../../styles/song-hint.css";
 import Experience from "../experience.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
+import Timeout from "../utils/timeout.ts";
 import { fragment, query } from "./dom.ts";
 
 // Time without a recognized song after the first note before the hint shows,
@@ -20,11 +22,11 @@ const TEMPLATE = /* html */ `
 export default class SongHint {
 	readonly button: HTMLButtonElement;
 	private readonly bookToggle: HTMLElement;
-	private showTimeout = 0;
-	private hideTimeout = 0;
+	private readonly showTimeout = new Timeout();
+	private readonly hideTimeout = new Timeout();
 	private done = false;
 	private unwaitNote: (() => void) | null = null;
-	private readonly unsubscribe: () => void;
+	private readonly disposables = new Disposables();
 
 	constructor(bookToggle: HTMLElement) {
 		this.bookToggle = bookToggle;
@@ -33,14 +35,16 @@ export default class SongHint {
 		document.body.append(content);
 
 		const { keyboard, songProgress } = Experience.getInstance();
-		this.unsubscribe = listen(songProgress.emitter, "learn", () => this.hide());
+		this.disposables.add(
+			listen(songProgress.emitter, "learn", () => this.hide()),
+		);
 		if (songProgress.learnedCount > 0) {
 			this.done = true;
 			return;
 		}
 		this.unwaitNote = listen(keyboard.emitter, "noteDown", () => {
 			this.stopWaitingForNote();
-			this.showTimeout = window.setTimeout(() => this.show(), HINT_DELAY);
+			this.showTimeout.set(() => this.show(), HINT_DELAY);
 		});
 	}
 
@@ -61,23 +65,23 @@ export default class SongHint {
 		this.done = true;
 		this.button.classList.add("is-visible");
 		this.bookToggle.classList.add("is-nudging");
-		this.hideTimeout = window.setTimeout(() => this.hide(), HINT_DURATION);
+		this.hideTimeout.set(() => this.hide(), HINT_DURATION);
 	}
 
 	hide() {
 		this.done = true;
 		this.stopWaitingForNote();
-		window.clearTimeout(this.showTimeout);
-		window.clearTimeout(this.hideTimeout);
+		this.showTimeout.clear();
+		this.hideTimeout.clear();
 		this.button.classList.remove("is-visible");
 		this.bookToggle.classList.remove("is-nudging");
 	}
 
 	destroy() {
-		this.unsubscribe();
+		this.disposables.dispose();
 		this.stopWaitingForNote();
-		window.clearTimeout(this.showTimeout);
-		window.clearTimeout(this.hideTimeout);
+		this.showTimeout.clear();
+		this.hideTimeout.clear();
 		this.button.remove();
 	}
 }
