@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import type { GLTF } from "three/addons";
 import Experience from "../experience.ts";
+import { createHaloTexture } from "./halo-texture.ts";
 
 const { randFloat } = THREE.MathUtils;
 
@@ -45,6 +46,28 @@ const TURN_SPEED = 5;
 // Clamped so a background tab doesn't send fairies flying on return
 const MAX_DELTA = 0.05;
 
+// Quick jitter on top of the smooth path: sine waves on each axis, as
+// [rate in rad/s, share of the wobble param], at rates that never line up
+const WOBBLE_WAVES = {
+	x: [
+		[3.1, 1],
+		[7.3, 0.3],
+	],
+	y: [[4.3, 1.2]],
+	z: [
+		[2.7, 1],
+		[6.1, 0.3],
+	],
+} as const;
+// Wing angle around the body, in radians: the wings swing FLAP_RANGE either
+// side of FLAP_REST when hovering, FLAP_EFFORT more at full speed
+const FLAP_REST = 0.35;
+const FLAP_RANGE = 0.3;
+const FLAP_EFFORT = 0.15;
+// The glow dips by up to TWINKLE_DEPTH, two waves beating together, in rad/s
+const TWINKLE_DEPTH = 0.15;
+const TWINKLE_RATES = [5, 2.3] as const;
+
 // Celebration: the fairies gather in a ring around the ocarina and spiral up,
 // glowing brighter. Duration in seconds.
 const CELEBRATE_TIME = 6;
@@ -79,48 +102,6 @@ type Fairy = {
 	speed: number;
 };
 
-// Soft radial gradient: bright center fading to nothing. Computed rather
-// than drawn on a canvas: WebKit dithers canvas gradients, and the noise in
-// the faint edge showed as colored and black dots once added to the scene.
-const createHaloTexture = (): THREE.DataTexture => {
-	const size = 128;
-	const half = size / 2;
-	// Opacity along the radius, as [position, alpha] stops
-	const stops = [
-		[0, 1],
-		[0.15, 0.6],
-		[0.45, 0.15],
-		[1, 0],
-	];
-	const alphaAt = (r: number) => {
-		for (let i = 1; i < stops.length; i++) {
-			const [from, fromAlpha] = stops[i - 1];
-			const [to, toAlpha] = stops[i];
-			if (r <= to) {
-				return THREE.MathUtils.mapLinear(r, from, to, fromAlpha, toAlpha);
-			}
-		}
-		return 0;
-	};
-
-	// Always white: only the alpha fades, so no stray color at the edge
-	const data = new Uint8Array(size * size * 4).fill(255);
-	for (let y = 0; y < size; y++) {
-		for (let x = 0; x < size; x++) {
-			const r = Math.hypot(x + 0.5 - half, y + 0.5 - half) / half;
-			data[(y * size + x) * 4 + 3] = Math.round(alphaAt(r) * 255);
-		}
-	}
-
-	const texture = new THREE.DataTexture(data, size, size);
-	texture.colorSpace = THREE.SRGBColorSpace;
-	texture.magFilter = THREE.LinearFilter;
-	texture.minFilter = THREE.LinearMipmapLinearFilter;
-	texture.generateMipmaps = true;
-	texture.needsUpdate = true;
-	return texture;
-};
-
 const whitened = (color: THREE.Color, amount: number) =>
 	color.clone().lerp(new THREE.Color("#ffffff"), amount);
 
@@ -141,13 +122,12 @@ export default class Fairies {
 		light: 1.5,
 	};
 
-	// Seconds left in the celebration of every song learned, 0 the rest of
-	// the time, and how far along it is (-1 while there is none)
-	private celebrateFor = 0;
-	private celebration = -1;
+	// Seconds into the celebration of every song learned, null the rest of
+	// the time
+	private celebrationTime: number | null = null;
 
 	// Reused every frame
-	private readonly steer = new THREE.Vector3();
+	private readonly steering = new THREE.Vector3();
 	private readonly away = new THREE.Vector3();
 	private readonly lookTarget = new THREE.Vector3();
 	private readonly heading = new THREE.Quaternion();
@@ -307,7 +287,24 @@ export default class Fairies {
 		const distance = this.away.length();
 		if (distance >= radius || distance === 0) return;
 		const strength = (1 - distance / radius) * REPEL_STRENGTH;
-		this.steer.addScaledVector(this.away.divideScalar(distance), strength);
+		this.steering.addScaledVector(this.away.divideScalar(distance), strength);
+	}
+
+	// How far along the celebration is, from 0 to 1, or null when there's none
+	private get celebrationProgress(): number | null {
+		return this.celebrationTime === null
+			? null
+			: this.celebrationTime / CELEBRATE_TIME;
+	}
+
+	celebrate() {
+		this.celebrationTime = 0;
+	}
+
+	// The fairies scatter again, each toward a new place to wander
+	private endCelebration() {
+		this.celebrationTime = null;
+		for (const fairy of this.fairies) this.retarget(fairy);
 	}
 
 	private updateFairy(
@@ -316,109 +313,145 @@ export default class Fairies {
 		dt: number,
 		camera: THREE.Vector3,
 	) {
-		const { params } = this;
-		const celebrating = this.celebration >= 0;
+		const progress = this.celebrationProgress;
+		const celebrating = progress !== null;
 		const maxSpeed =
-			params.speed * fairy.speed * (celebrating ? CELEBRATE_SPEED : 1);
+			this.params.speed * fairy.speed * (celebrating ? CELEBRATE_SPEED : 1);
 
 		if (celebrating) {
-			// The ring moves on: the arrive steering below chases it
-			this.celebrateTarget(fairy);
+			// The ring moves on: the arrive steering chases it
+			this.celebrateTarget(fairy, progress);
 			fairy.hoverFor = 0;
-			// Zero, so a new place to wander is picked the frame it ends
-			fairy.retargetIn = 0;
 		} else {
-			fairy.retargetIn -= dt;
-			fairy.hoverFor -= dt;
-			if (
-				fairy.hoverFor <= 0 &&
-				(fairy.position.distanceTo(fairy.target) < ARRIVE_DISTANCE ||
-					fairy.retargetIn <= 0)
-			) {
-				this.randomTarget(fairy.target);
-				fairy.retargetIn = randFloat(...RETARGET_TIME);
-				// Now and then, stay a moment where it arrived
-				if (Math.random() < HOVER_CHANCE)
-					fairy.hoverFor = randFloat(...HOVER_TIME);
-			}
+			this.wander(fairy, dt);
 		}
-		const distance = fairy.position.distanceTo(fairy.target);
+		this.fly(fairy, dt, maxSpeed, camera, celebrating);
+		this.place(fairy, t);
+		this.orient(fairy, dt);
+		this.animate(fairy, t, maxSpeed, progress);
+	}
 
-		// Arrive: full speed far away, slowing down near the target; stop to hover
+	// A new target once this one is reached or taking too long, unless hovering
+	private wander(fairy: Fairy, dt: number) {
+		fairy.retargetIn -= dt;
+		fairy.hoverFor -= dt;
+		const arrived = fairy.position.distanceTo(fairy.target) < ARRIVE_DISTANCE;
+		if (fairy.hoverFor <= 0 && (arrived || fairy.retargetIn <= 0)) {
+			this.retarget(fairy);
+		}
+	}
+
+	private retarget(fairy: Fairy) {
+		this.randomTarget(fairy.target);
+		fairy.retargetIn = randFloat(...RETARGET_TIME);
+		// Now and then, stay a moment where it arrived
+		fairy.hoverFor =
+			Math.random() < HOVER_CHANCE ? randFloat(...HOVER_TIME) : 0;
+	}
+
+	// Arrive: full speed far away, slowing down near the target; stop to hover.
+	// Steers clear of the camera, and of the ocarina unless celebrating.
+	private fly(
+		fairy: Fairy,
+		dt: number,
+		maxSpeed: number,
+		camera: THREE.Vector3,
+		celebrating: boolean,
+	) {
 		if (fairy.hoverFor > 0) {
-			this.steer.copy(fairy.velocity).multiplyScalar(-HOVER_BRAKE);
+			this.steering.copy(fairy.velocity).multiplyScalar(-HOVER_BRAKE);
 		} else {
-			this.steer
+			const distance = fairy.position.distanceTo(fairy.target);
+			this.steering
 				.subVectors(fairy.target, fairy.position)
 				.setLength(maxSpeed * Math.min(1, distance / SLOW_DOWN_DISTANCE))
 				.sub(fairy.velocity)
 				.multiplyScalar(STEER_STRENGTH);
 		}
 		// The celebration ring is inside the avoid radius
-		if (!celebrating)
+		if (!celebrating) {
 			this.repel(fairy, this.avoidOcarina, OCARINA_AVOID_RADIUS);
+		}
 		this.repel(fairy, camera, CAMERA_AVOID_RADIUS);
 
-		fairy.velocity.addScaledVector(this.steer, dt);
+		fairy.velocity.addScaledVector(this.steering, dt);
 		fairy.position.addScaledVector(fairy.velocity, dt);
 		// The ring hangs lower than the flight area allows
 		if (!celebrating) fairy.position.clamp(BOUNDS.min, BOUNDS.max);
+	}
 
-		// Quick jittery wobble on top of the smooth path
-		const p = fairy.phase;
-		const w = params.wobble;
-		fairy.group.position.set(
-			fairy.position.x +
-				Math.sin(t * 3.1 + p) * w +
-				Math.sin(t * 7.3 + p) * w * 0.3,
-			fairy.position.y + Math.sin(t * 4.3 + p * 2) * w * 1.2,
-			fairy.position.z +
-				Math.cos(t * 2.7 + p) * w +
-				Math.cos(t * 6.1 + p) * w * 0.3,
-		);
-
-		// Turn smoothly toward where it's flying; keep the last heading when hovering
-		if (fairy.velocity.lengthSq() > 0.01) {
-			this.lookTarget.copy(fairy.group.position).add(fairy.velocity);
-			this.lookMatrix.lookAt(
-				this.lookTarget,
-				fairy.group.position,
-				fairy.group.up,
+	// Shown at its position, plus the wobble
+	private place(fairy: Fairy, t: number) {
+		const wobble = (waves: readonly (readonly [number, number])[]) =>
+			waves.reduce(
+				(sum, [rate, share]) =>
+					sum + Math.sin(t * rate + fairy.phase) * share * this.params.wobble,
+				0,
 			);
-			this.heading.setFromRotationMatrix(this.lookMatrix);
-			fairy.body.quaternion.slerp(this.heading, 1 - Math.exp(-TURN_SPEED * dt));
-		}
+		fairy.group.position.set(
+			fairy.position.x + wobble(WOBBLE_WAVES.x),
+			fairy.position.y + wobble(WOBBLE_WAVES.y),
+			fairy.position.z + wobble(WOBBLE_WAVES.z),
+		);
+	}
 
-		// Wings fold back and forth, faster and wider when flying
+	// Turn smoothly toward where it's flying; keep the last heading when hovering
+	private orient(fairy: Fairy, dt: number) {
+		if (fairy.velocity.lengthSq() <= 0.01) return;
+		this.lookTarget.copy(fairy.group.position).add(fairy.velocity);
+		this.lookMatrix.lookAt(
+			this.lookTarget,
+			fairy.group.position,
+			fairy.group.up,
+		);
+		this.heading.setFromRotationMatrix(this.lookMatrix);
+		fairy.body.quaternion.slerp(this.heading, 1 - Math.exp(-TURN_SPEED * dt));
+	}
+
+	// Wings flapping faster and wider when flying, and a twinkling glow that
+	// flares up at the height of the celebration
+	private animate(
+		fairy: Fairy,
+		t: number,
+		maxSpeed: number,
+		celebration: number | null,
+	) {
+		const { params } = this;
+		const p = fairy.phase;
+
 		const effort = Math.min(1, fairy.velocity.length() / maxSpeed || 0);
 		const flap =
-			0.35 + (0.3 + effort * 0.15) * Math.sin(t * params.flapSpeed + p);
+			FLAP_REST +
+			(FLAP_RANGE + effort * FLAP_EFFORT) * Math.sin(t * params.flapSpeed + p);
 		for (const { pivot, side } of fairy.wings) pivot.rotation.y = side * flap;
 
-		// Gentle twinkle, flaring up at the height of the celebration
-		const twinkle = 0.85 + 0.15 * Math.sin(t * 5 + p) * Math.sin(t * 2.3 + p);
-		const flare = celebrating
-			? 1 + (CELEBRATE_GLOW - 1) * Math.sin(this.celebration * Math.PI)
-			: 1;
+		const [rateA, rateB] = TWINKLE_RATES;
+		const twinkle =
+			1 -
+			TWINKLE_DEPTH +
+			TWINKLE_DEPTH * Math.sin(t * rateA + p) * Math.sin(t * rateB + p);
+		const flare =
+			celebration === null
+				? 1
+				: 1 + (CELEBRATE_GLOW - 1) * Math.sin(celebration * Math.PI);
 		fairy.halo.scale.setScalar(BODY_RADIUS * params.glow * twinkle * flare);
 		fairy.light.intensity = params.light * twinkle * flare;
 	}
 
-	celebrate() {
-		this.celebrateFor = CELEBRATE_TIME;
-	}
-
 	// The fairy's place on a ring that turns around the ocarina, tightens, then
 	// widens again as it rises
-	private celebrateTarget(fairy: Fairy) {
-		const phase = this.celebration;
+	private celebrateTarget(fairy: Fairy, progress: number) {
 		const angle =
-			(fairy.index / FAIRY_COUNT + phase * CELEBRATE_TURNS) * Math.PI * 2;
+			(fairy.index / FAIRY_COUNT + progress * CELEBRATE_TURNS) * Math.PI * 2;
 		const [wide, tight] = CELEBRATE_RADIUS;
-		const radius = THREE.MathUtils.lerp(wide, tight, Math.sin(phase * Math.PI));
+		const radius = THREE.MathUtils.lerp(
+			wide,
+			tight,
+			Math.sin(progress * Math.PI),
+		);
 		fairy.target.set(
 			this.avoidOcarina.x + Math.cos(angle) * radius,
-			this.avoidOcarina.y + phase * CELEBRATE_RISE,
+			this.avoidOcarina.y + progress * CELEBRATE_RISE,
 			this.avoidOcarina.z + Math.sin(angle) * radius,
 		);
 	}
@@ -427,9 +460,10 @@ export default class Fairies {
 		const { time, camera } = Experience.getInstance();
 		const t = time.elapsed / 1000;
 		const dt = Math.min(time.delta / 1000, MAX_DELTA);
-		this.celebrateFor = Math.max(0, this.celebrateFor - dt);
-		this.celebration =
-			this.celebrateFor > 0 ? 1 - this.celebrateFor / CELEBRATE_TIME : -1;
+		if (this.celebrationTime !== null) {
+			this.celebrationTime += dt;
+			if (this.celebrationTime >= CELEBRATE_TIME) this.endCelebration();
+		}
 		for (const fairy of this.fairies) {
 			this.updateFairy(fairy, t, dt, camera.instance.position);
 		}
