@@ -89,7 +89,7 @@ export default class Ocarina {
 		this.floatGroup.add(this.facingGroup);
 		this.floatGroup.position.set(this.anchor.x, 0, this.anchor.z);
 		scene.add(this.floatGroup);
-		this.fit(size);
+		this.setSize(size);
 		this.facingGroup.rotation.y = this.facingTarget();
 
 		this.model.scene.traverse((child) => {
@@ -106,7 +106,7 @@ export default class Ocarina {
 			folder.add(this.params, "front", -Math.PI, Math.PI, 0.01);
 			folder
 				.add({ size }, "size", 0.2, 5, 0.01)
-				.onChange((v: number) => this.fit(v));
+				.onChange((v: number) => this.setSize(v));
 			folder
 				.add(this.params, "metalness", 0, 1, 0.01)
 				.onChange(() => this.applyMetalness());
@@ -149,7 +149,7 @@ export default class Ocarina {
 	}
 
 	// Scales the model so its longest side is `size`, centered on the float group
-	private fit(size: number) {
+	private setSize(size: number) {
 		// Measured detached, so the float and press transforms don't skew the box
 		const scene = this.model.scene;
 		scene.removeFromParent();

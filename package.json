@@ -7,16 +7,21 @@
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"preview": "vite preview",
-		"assets": "node scripts/assets.mjs"
+		"assets": "node scripts/assets.mjs",
+		"lint": "biome check",
+		"format": "biome check --write",
+		"test": "vitest run"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.4.15",
 		"@types/node": "^25.9.1",
 		"@types/three": "^0.184.1",
+		"happy-dom": "^20.14.5",
 		"lil-gui": "^0.21.0",
 		"stats-gl": "^4.1.0",
 		"typescript": "~6.0.2",
-		"vite": "^8.0.12"
+		"vite": "^8.0.12",
+		"vitest": "^5.0.3"
 	},
 	"dependencies": {
 		"gsap": "^3.15.0",
