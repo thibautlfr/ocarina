@@ -1,5 +1,5 @@
 import type OcarinaSampler from "../audio/ocarina-sampler.ts";
-import { schedule } from "../audio/ocarina-sampler.ts";
+import { schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
 import { listen } from "../utils/events.ts";
 import { noteDurations, type Song } from "./songs.ts";

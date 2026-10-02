@@ -1,11 +1,8 @@
 import "../../styles/menu.css";
 import "../../styles/song-note.css";
 import "../../styles/song-book.css";
-import {
-	type ScheduledNote,
-	type Sequence,
-	schedule,
-} from "../audio/ocarina-sampler.ts";
+import type { Sequence } from "../audio/ocarina-sampler.ts";
+import { type ScheduledNote, schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
 import type { OcarinaButton } from "../ocarina-buttons.ts";
 import { noteDurations, type Song, songs } from "../songs/songs.ts";

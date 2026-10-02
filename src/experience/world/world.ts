@@ -1,8 +1,6 @@
 import * as THREE from "three";
-import OcarinaSampler, {
-	type ScheduledNote,
-	schedule,
-} from "../audio/ocarina-sampler.ts";
+import OcarinaSampler from "../audio/ocarina-sampler.ts";
+import { type ScheduledNote, schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
 import SongPlayback from "../songs/song-playback.ts";
 import Fairies from "./fairies.ts";

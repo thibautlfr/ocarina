@@ -1,6 +1,6 @@
 import "../../styles/menu.css";
 import "../../styles/title-screen.css";
-import { type ScheduledNote, schedule } from "../audio/ocarina-sampler.ts";
+import { type ScheduledNote, schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
 import { hasModifier } from "../input/keyboard.ts";
 import type { OcarinaButton } from "../ocarina-buttons.ts";

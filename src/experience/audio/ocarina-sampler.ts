@@ -3,6 +3,7 @@ import Experience from "../experience.ts";
 import { OCARINA_BUTTONS, type OcarinaButton } from "../ocarina-buttons.ts";
 import type Settings from "../settings.ts";
 import { listen } from "../utils/events.ts";
+import type { ScheduledNote } from "./schedule.ts";
 
 // Resource names of each button's sample (see sources.ts)
 const BUTTON_SAMPLES: Record<OcarinaButton, string> = {
@@ -36,26 +37,6 @@ const holdAt = (param: AudioParam, time: number) => {
 type Voice = {
 	source: AudioBufferSourceNode;
 	gain: GainNode;
-};
-
-export type ScheduledNote = {
-	button: OcarinaButton;
-	// AudioContext time, in seconds
-	time: number;
-	duration: number;
-};
-
-// Places notes back to back, the first one at `start`
-export const schedule = (
-	notes: readonly Omit<ScheduledNote, "time">[],
-	start: number,
-): ScheduledNote[] => {
-	let time = start;
-	return notes.map((note) => {
-		const scheduled = { ...note, time };
-		time += note.duration;
-		return scheduled;
-	});
 };
 
 // A sequence being played. `end` is when its last note has faded.
