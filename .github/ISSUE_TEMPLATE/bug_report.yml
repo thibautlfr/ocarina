@@ -1,0 +1,86 @@
+name: Something is broken
+description: The experience does not work the way it should — visually, musically, or not at all.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time. The details below are what let me reproduce a problem
+        on a machine I do not have in front of me.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you do, and what did the experience do instead of what you expected?
+      placeholder: I played the Song of Storms and nothing was recognized, the notes just sounded normally.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      description: Which part of the experience is it about?
+      options:
+        - The 3D scene (ocarina, house, fairies, camera)
+        - The sound
+        - Playing notes / the controls
+        - Song recognition
+        - The song book
+        - The settings or about menu
+        - The title screen / loading
+        - Somewhere else, or I am not sure
+    validations:
+      required: true
+
+  - type: input
+    id: device
+    attributes:
+      label: Device and operating system
+      placeholder: iPhone 15, iOS 18 — or MacBook Air M2, macOS 15 — or Windows 11 desktop
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and version
+      placeholder: Safari 18.3, Chrome 133, Firefox 135…
+    validations:
+      required: true
+
+  - type: dropdown
+    id: keyboard
+    attributes:
+      label: Keyboard layout
+      description: Only matters if the problem is about playing notes.
+      options:
+        - AZERTY
+        - QWERTY
+        - QWERTZ
+        - Another layout
+        - Touch screen, no keyboard
+        - Not relevant here
+    validations:
+      required: false
+
+  - type: textarea
+    id: console
+    attributes:
+      label: Console errors
+      description: >
+        If you know how to open your browser's developer console, red errors there are gold.
+        Paste them as they are — no formatting needed.
+      render: text
+    validations:
+      required: false
+
+  - type: textarea
+    id: media
+    attributes:
+      label: Screenshot or screen recording
+      description: Drag a file straight into this box. For anything visual, one image says more than a paragraph.
+    validations:
+      required: false

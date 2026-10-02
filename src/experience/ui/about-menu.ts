@@ -9,7 +9,7 @@ import { githubIcon, linkedinIcon, xLogoIcon } from "./pixel-icons.ts";
 const AUTHOR = "Thibaut Lefrançois";
 const WEBSITE = "https://thibaut-lefrancois.com";
 const SOURCE = "https://github.com/thibautlfr/ocarina";
-const FEEDBACK = `${SOURCE}/issues/new`;
+const FEEDBACK = `${SOURCE}/issues/new/choose`;
 
 const SOCIALS: { name: string; url: string; icon: string }[] = [
 	{ name: "GitHub", url: "https://github.com/thibautlfr", icon: githubIcon },
