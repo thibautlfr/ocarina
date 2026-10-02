@@ -96,6 +96,7 @@ const TEMPLATE = /* html */ `
 				</ul>
 			</li>
 			<li class="about__footer">
+				<p class="about__dedication oot-text">To my father, who introduced me to Hyrule.</p>
 				<p class="about__disclaimer oot-text">
 					A fan tribute, not affiliated with Nintendo.
 					<span>The Legend of Zelda is a trademark of Nintendo.</span>

@@ -53,11 +53,9 @@ jobs:
         run: pnpm assets
 
       - name: Build
-        # Served at https://<owner>.github.io/ocarina/ for now — not the
-        # ocarina.thibaut-lefrancois.com custom domain (that stays on ocarina-3d).
+        # Served at the ocarina.thibaut-lefrancois.com custom domain (set in
+        # the repo's Pages settings), i.e. from the root: no VITE_BASE_PATH.
         run: pnpm build
-        env:
-          VITE_BASE_PATH: /ocarina/
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
