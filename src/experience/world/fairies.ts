@@ -149,14 +149,13 @@ export default class Fairies {
 			this.fairies.push(fairy);
 		}
 
-		const folder = debug.addFolder("Fairies");
-		if (folder) {
-			folder.add(this.params, "speed", 0, 4, 0.01);
-			folder.add(this.params, "wobble", 0, 0.2, 0.001);
-			folder.add(this.params, "flapSpeed", 0, 60, 0.1).name("flap speed");
-			folder.add(this.params, "glow", 0, 30, 0.1);
-			folder.add(this.params, "light", 0, 10, 0.01);
-		}
+		debug.addControls("Fairies", this.params, {
+			speed: [0, 4, 0.01],
+			wobble: [0, 0.2, 0.001],
+			flapSpeed: [0, 60, 0.1, "flap speed"],
+			glow: [0, 30, 0.1],
+			light: [0, 10, 0.01],
+		});
 	}
 
 	private createFairy(index: number, model: GLTF, color: string): Fairy {

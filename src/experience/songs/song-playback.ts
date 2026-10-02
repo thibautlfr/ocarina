@@ -32,15 +32,14 @@ export default class SongPlayback {
 		this.sampler = sampler;
 		this.jingle = resources.get<AudioBuffer>("songCorrect");
 
-		const folder = debug.addFolder("Song playback");
-		if (folder) {
-			folder.add(this.params, "lastNoteHold", 0, 1, 0.01);
-			folder.add(this.params, "lastNoteFade", 0.01, 1, 0.01);
-			folder.add(this.params, "jingleDelay", 0, 1, 0.01);
-			folder.add(this.params, "jingleVolume", 0, 1, 0.01);
-			folder.add(this.params, "replayDelay", 0, 2, 0.01);
-			folder.add(this.params, "tempo", 0.5, 2, 0.05);
-		}
+		debug.addControls("Song playback", this.params, {
+			lastNoteHold: [0, 1, 0.01],
+			lastNoteFade: [0.01, 1, 0.01],
+			jingleDelay: [0, 1, 0.01],
+			jingleVolume: [0, 1, 0.01],
+			replayDelay: [0, 2, 0.01],
+			tempo: [0.5, 2, 0.05],
+		});
 
 		this.disposables.add(
 			listen(songDetector.emitter, "songPlayed", (song) => this.perform(song)),

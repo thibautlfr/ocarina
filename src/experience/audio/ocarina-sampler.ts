@@ -84,18 +84,19 @@ export default class OcarinaSampler {
 		const { resources, keyboard, settings, debug } = Experience.getInstance();
 		this.settings = settings;
 
-		const folder = debug.addFolder("Sound");
-		if (folder) {
-			folder
-				.add(this.params, "level", 0, 1, 0.01)
-				.onChange(() => this.applyVolume());
-			folder.add(this.params, "attack", 0.005, 0.5, 0.005);
-			folder.add(this.params, "release", 0.01, 1, 0.01);
-			folder.add(this.params, "crossfade", 0.005, 0.2, 0.005);
-			folder.add(this.params, "vibratoDelay", 0, 1, 0.01);
-			folder.add(this.params, "vibratoRate", 0, 12, 0.1);
-			folder.add(this.params, "vibratoDepth", 0, 50, 1);
-		}
+		debug
+			.addControls("Sound", this.params, {
+				level: [0, 1, 0.01],
+				attack: [0.005, 0.5, 0.005],
+				release: [0.01, 1, 0.01],
+				crossfade: [0.005, 0.2, 0.005],
+				vibratoDelay: [0, 1, 0.01],
+				vibratoRate: [0, 12, 0.1],
+				vibratoDepth: [0, 50, 1],
+			})
+			?.onChange(({ property }) => {
+				if (property === "level") this.applyVolume();
+			});
 
 		this.disposables.add(
 			listen(keyboard.emitter, "noteDown", (button) => this.play(button)),

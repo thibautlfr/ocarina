@@ -111,16 +111,21 @@ export default class Ocarina {
 			folder
 				.add(this.params, "metalness", 0, 1, 0.01)
 				.onChange(() => this.applyMetalness());
-
-			const pressFolder = folder.addFolder("Press");
-			pressFolder.add(this.pressParams, "amplitude", 0, 3, 0.01);
-			pressFolder.add(this.pressParams, "attack", 0.02, 1, 0.01);
-			pressFolder.add(this.pressParams, "duration", 0.05, 2, 0.01);
-			pressFolder.add(this.pressParams, "holdReturn", 0, 1, 0.01);
-			pressFolder.add(this.pressParams, "holdCycles", 0, 8, 1);
-			pressFolder.add(this.pressParams, "holdDecay", 0, 1, 0.01);
-			pressFolder.add(this.pressParams, "release", 0.05, 2, 0.01);
 		}
+		debug.addControls(
+			"Press",
+			this.pressParams,
+			{
+				amplitude: [0, 3, 0.01],
+				attack: [0.02, 1, 0.01],
+				duration: [0.05, 2, 0.01],
+				holdReturn: [0, 1, 0.01],
+				holdCycles: [0, 8, 1],
+				holdDecay: [0, 1, 0.01],
+				release: [0.05, 2, 0.01],
+			},
+			folder,
+		);
 
 		this.disposables.add(
 			listen(sampler.emitter, "noteOn", (button) => this.playPress(button)),
