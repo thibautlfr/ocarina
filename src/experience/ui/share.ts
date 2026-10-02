@@ -1,3 +1,5 @@
+import Disposables from "../utils/disposables.ts";
+import Timeout from "../utils/timeout.ts";
 import { isTouchScreen, trackHover } from "./dom.ts";
 
 const SHARE_TEXT = "Play the Ocarina of Time in your browser 🎵";
@@ -42,8 +44,8 @@ type ShareButtonOptions = {
 export class ShareButton {
 	private readonly button: HTMLButtonElement;
 	private readonly label: string;
-	private resetTimeout = 0;
-	private readonly listeners = new AbortController();
+	private readonly resetTimeout = new Timeout();
+	private readonly disposables = new Disposables();
 
 	constructor(
 		button: HTMLButtonElement,
@@ -52,7 +54,7 @@ export class ShareButton {
 		this.button = button;
 		this.label = button.textContent ?? "";
 
-		const { signal } = this.listeners;
+		const { signal } = this.disposables;
 		trackHover(button, signal);
 		button.addEventListener(
 			"click",
@@ -67,20 +69,19 @@ export class ShareButton {
 	}
 
 	private showAnswer(answer: string) {
-		window.clearTimeout(this.resetTimeout);
 		this.button.textContent = answer;
 		this.button.classList.add("is-copied");
-		this.resetTimeout = window.setTimeout(() => this.reset(), ANSWER_DURATION);
+		this.resetTimeout.set(() => this.reset(), ANSWER_DURATION);
 	}
 
 	reset() {
-		window.clearTimeout(this.resetTimeout);
+		this.resetTimeout.clear();
 		this.button.textContent = this.label;
 		this.button.classList.remove("is-copied");
 	}
 
 	destroy() {
-		window.clearTimeout(this.resetTimeout);
-		this.listeners.abort();
+		this.resetTimeout.clear();
+		this.disposables.dispose();
 	}
 }

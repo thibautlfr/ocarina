@@ -1,8 +1,5 @@
 import * as THREE from "three";
-import OcarinaSampler, {
-	type ScheduledNote,
-	schedule,
-} from "../audio/ocarina-sampler.ts";
+import { type ScheduledNote, schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
 import SongPlayback from "../songs/song-playback.ts";
 import Fairies from "./fairies.ts";
@@ -34,7 +31,6 @@ const CELEBRATION_TIME = 3.4;
 
 export default class World {
 	// Created once resources are ready
-	sampler: OcarinaSampler | null = null;
 	private house: LinksHouse | null = null;
 	private ocarina: Ocarina | null = null;
 	private fairies: Fairies | null = null;
@@ -85,10 +81,10 @@ export default class World {
 		// Captured before the ocarina exists, so it doesn't reflect itself
 		this.captureEnvironment(aboveStump(stumpRadius * ENVIRONMENT_HEIGHT));
 
-		this.sampler = new OcarinaSampler();
-		this.songPlayback = new SongPlayback(this.sampler);
+		const { sampler } = this.experience;
+		this.songPlayback = new SongPlayback(sampler);
 		this.ocarina = new Ocarina(
-			this.sampler,
+			sampler,
 			stumpTop,
 			stumpRadius * 2 * OCARINA_STUMP_RATIO,
 		);
@@ -98,13 +94,12 @@ export default class World {
 	// Once every song is learned. Returns how long it lasts, in seconds (the
 	// fairies take longer to scatter again).
 	celebrate(): number {
+		const { sampler } = this.experience;
 		this.fairies?.celebrate();
-		if (this.sampler) {
-			this.sampler.unlock();
-			this.sampler.playSequence(
-				schedule(FANFARE, this.sampler.currentTime + FANFARE_DELAY),
-			);
-		}
+		sampler.unlock();
+		sampler.playSequence(
+			schedule(FANFARE, sampler.currentTime + FANFARE_DELAY),
+		);
 		return CELEBRATION_TIME;
 	}
 
@@ -153,7 +148,6 @@ export default class World {
 		this.ocarina?.destroy();
 		this.fairies?.destroy();
 		this.songPlayback?.destroy();
-		this.sampler?.destroy();
 		this.house?.destroy();
 		this.environment?.dispose();
 	}

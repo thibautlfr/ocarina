@@ -4,7 +4,9 @@ import "../../styles/song-note.css";
 import "../../styles/song-learned.css";
 import Experience from "../experience.ts";
 import type { Song } from "../songs/songs.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
+import Timeout from "../utils/timeout.ts";
 import { fragment, query } from "./dom.ts";
 import { songNoteIcon } from "./pixel-icons.ts";
 
@@ -23,8 +25,8 @@ export default class SongLearned {
 	private readonly root: HTMLElement;
 	private readonly note: HTMLElement;
 	private readonly name: HTMLElement;
-	private hideTimeout = 0;
-	private readonly unsubscribe: () => void;
+	private readonly hideTimeout = new Timeout();
+	private readonly disposables = new Disposables();
 
 	constructor() {
 		const content = fragment(TEMPLATE);
@@ -34,8 +36,8 @@ export default class SongLearned {
 		document.body.append(content);
 
 		const { songProgress } = Experience.getInstance();
-		this.unsubscribe = listen(songProgress.emitter, "learn", (song) =>
-			this.show(song),
+		this.disposables.add(
+			listen(songProgress.emitter, "learn", (song) => this.show(song)),
 		);
 	}
 
@@ -47,18 +49,17 @@ export default class SongLearned {
 		this.root.classList.remove("is-visible");
 		void this.root.offsetWidth;
 		this.root.classList.add("is-visible");
-		window.clearTimeout(this.hideTimeout);
-		this.hideTimeout = window.setTimeout(() => this.hide(), VISIBLE_DURATION);
+		this.hideTimeout.set(() => this.hide(), VISIBLE_DURATION);
 	}
 
 	hide() {
-		window.clearTimeout(this.hideTimeout);
+		this.hideTimeout.clear();
 		this.root.classList.remove("is-visible");
 	}
 
 	destroy() {
-		this.unsubscribe();
-		window.clearTimeout(this.hideTimeout);
+		this.disposables.dispose();
+		this.hideTimeout.clear();
 		this.root.remove();
 	}
 }

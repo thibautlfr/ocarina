@@ -1,6 +1,7 @@
 import type OcarinaSampler from "../audio/ocarina-sampler.ts";
-import { schedule } from "../audio/ocarina-sampler.ts";
+import { schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
+import Disposables from "../utils/disposables.ts";
 import { listen } from "../utils/events.ts";
 import { noteDurations, type Song } from "./songs.ts";
 
@@ -11,7 +12,7 @@ export default class SongPlayback {
 	private readonly sampler: OcarinaSampler;
 	private readonly jingle: AudioBuffer;
 	private playing = false;
-	private readonly unsubscribe: () => void;
+	private readonly disposables = new Disposables();
 
 	private readonly params = {
 		// The song's last note rings this long, then fades under the jingle
@@ -31,18 +32,17 @@ export default class SongPlayback {
 		this.sampler = sampler;
 		this.jingle = resources.get<AudioBuffer>("songCorrect");
 
-		const folder = debug.addFolder("Song playback");
-		if (folder) {
-			folder.add(this.params, "lastNoteHold", 0, 1, 0.01);
-			folder.add(this.params, "lastNoteFade", 0.01, 1, 0.01);
-			folder.add(this.params, "jingleDelay", 0, 1, 0.01);
-			folder.add(this.params, "jingleVolume", 0, 1, 0.01);
-			folder.add(this.params, "replayDelay", 0, 2, 0.01);
-			folder.add(this.params, "tempo", 0.5, 2, 0.05);
-		}
+		debug.addControls("Song playback", this.params, {
+			lastNoteHold: [0, 1, 0.01],
+			lastNoteFade: [0.01, 1, 0.01],
+			jingleDelay: [0, 1, 0.01],
+			jingleVolume: [0, 1, 0.01],
+			replayDelay: [0, 2, 0.01],
+			tempo: [0.5, 2, 0.05],
+		});
 
-		this.unsubscribe = listen(songDetector.emitter, "songPlayed", (song) =>
-			this.perform(song),
+		this.disposables.add(
+			listen(songDetector.emitter, "songPlayed", (song) => this.perform(song)),
 		);
 	}
 
@@ -77,7 +77,7 @@ export default class SongPlayback {
 	}
 
 	destroy() {
-		this.unsubscribe();
+		this.disposables.dispose();
 		// The sampler cancels its pending callbacks, so unlock here
 		Experience.getInstance().keyboard.unlock(this);
 	}
