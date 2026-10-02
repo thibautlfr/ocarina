@@ -19,13 +19,15 @@ export type NoteColor =
 
 export interface Song {
 	readonly name: string;
-	readonly game: "Ocarina of Time" | "Majora's Mask";
 	// Quarter notes per minute of the replay
 	readonly bpm: number;
 	readonly notes: readonly SongNote[];
 	readonly buttons: readonly OcarinaButton[];
 	readonly color: NoteColor;
 }
+
+export const GAMES = ["Ocarina of Time", "Majora's Mask"] as const;
+export type Game = (typeof GAMES)[number];
 
 // Controller notation: A = A, v = C▼, > = C▶, < = C◀, ^ = C▲
 const NOTATION: Record<string, OcarinaButton> = {
@@ -36,21 +38,29 @@ const NOTATION: Record<string, OcarinaButton> = {
 	"^": "CUp",
 };
 
-// Each note is a button symbol followed by its length in beats: "<2 ^1 >3"
-const song = (
-	name: string,
-	game: Song["game"],
-	bpm: number,
-	score: string,
-	color: NoteColor = "white",
-): Song => {
-	const notes = score.split(" ").map((token) => ({
-		button: NOTATION[token[0]],
-		beats: Number(token.slice(1)),
-	}));
+// Each note of `score` is a button symbol followed by its length in beats:
+// "<2 ^1 >3"
+export const song = ({
+	name,
+	bpm,
+	score,
+	color = "white",
+}: {
+	name: string;
+	bpm: number;
+	score: string;
+	color?: NoteColor;
+}): Song => {
+	const notes = score.split(" ").map((token) => {
+		const button = NOTATION[token[0]];
+		const beats = Number(token.slice(1));
+		if (!button || !(beats > 0)) {
+			throw new Error(`Invalid note "${token}" in ${name}`);
+		}
+		return { button, beats };
+	});
 	return {
 		name,
-		game,
 		bpm,
 		notes,
 		buttons: notes.map((n) => n.button),
@@ -67,76 +77,45 @@ export const noteDurations = (song: Song, tempo = 1) => {
 	}));
 };
 
+// Every song, laid out shelf by shelf as in the games' quest screens.
 // Rhythms are approximate, written from memory: check them against the games.
-// No song is contained in another, so matching the end of the history is unambiguous.
-export const songs: Song[] = [
-	song("Zelda's Lullaby", "Ocarina of Time", 110, "<2 ^1 >3 <2 ^1 >3"),
-	song("Epona's Song", "Ocarina of Time", 140, "^1 <1 >4 ^1 <1 >4"),
-	song("Saria's Song", "Ocarina of Time", 140, "v.5 >.5 <1 v.5 >.5 <2"),
-	song("Sun's Song", "Ocarina of Time", 150, ">.5 v.5 ^1 >.5 v.5 ^2"),
-	song("Song of Time", "Ocarina of Time", 100, ">1 A2 v1 >1 A2 v2"),
-	song("Song of Storms", "Ocarina of Time", 170, "A.5 v.5 ^2 A.5 v.5 ^3"),
-	song(
-		"Minuet of Forest",
-		"Ocarina of Time",
-		130,
-		"A1 ^2 <.5 >.5 <1 >3",
-		"green",
-	),
-	song(
-		"Bolero of Fire",
-		"Ocarina of Time",
-		150,
-		"v.5 A.5 v.5 A.5 >.5 v.5 >.5 v2",
-		"red",
-	),
-	song("Serenade of Water", "Ocarina of Time", 110, "A1 v1 >2 >1 <3", "blue"),
-	song(
-		"Nocturne of Shadow",
-		"Ocarina of Time",
-		100,
-		"<1 >1 >1 A2 <1 >1 v3",
-		"purple",
-	),
-	song(
-		"Requiem of Spirit",
-		"Ocarina of Time",
-		120,
-		"A2 v1 A3 >2 v1 A3",
-		"orange",
-	),
-	song(
-		"Prelude of Light",
-		"Ocarina of Time",
-		130,
-		"^1 >.5 ^1 >.5 <.5 ^2.5",
-		"yellow",
-	),
-	song("Song of Healing", "Majora's Mask", 100, "<1 >1 v2 <1 >1 v3", "pink"),
-	song("Song of Soaring", "Majora's Mask", 150, "v.5 <.5 ^1 v.5 <.5 ^2"),
-	song("Inverted Song of Time", "Majora's Mask", 100, "v1 A2 >1 v1 A2 >2"),
-	song("Song of Double Time", "Majora's Mask", 140, ">.5 >1 A.5 A1 v.5 v1.5"),
-	song(
-		"Sonata of Awakening",
-		"Majora's Mask",
-		150,
-		"^.5 <.5 ^.5 <.5 A1 >.5 A2",
-		"green",
-	),
-	song("Goron Lullaby", "Majora's Mask", 90, "A1 >1 <2 A1 >1 <1 >1 A3", "red"),
-	song(
-		"New Wave Bossa Nova",
-		"Majora's Mask",
-		120,
-		"<1.5 ^.5 <1 >1.5 v.5 <1 >2",
-		"blue",
-	),
-	song(
-		"Elegy of Emptiness",
-		"Majora's Mask",
-		90,
-		">1 <.5 >.5 v2 >1 ^1 <3",
-		"orange",
-	),
-	song("Oath to Order", "Majora's Mask", 110, ">1 v1 A2 v1 >1 ^3"),
-];
+// biome-ignore format: one song per line reads as a table
+export const SHELVES: Record<Game, Song[][]> = {
+	"Ocarina of Time": [
+		[
+			song({ name: "Zelda's Lullaby",       bpm: 110, score: "<2 ^1 >3 <2 ^1 >3" }),
+			song({ name: "Epona's Song",          bpm: 140, score: "^1 <1 >4 ^1 <1 >4" }),
+			song({ name: "Saria's Song",          bpm: 140, score: "v.5 >.5 <1 v.5 >.5 <2" }),
+			song({ name: "Sun's Song",            bpm: 150, score: ">.5 v.5 ^1 >.5 v.5 ^2" }),
+			song({ name: "Song of Time",          bpm: 100, score: ">1 A2 v1 >1 A2 v2" }),
+			song({ name: "Song of Storms",        bpm: 170, score: "A.5 v.5 ^2 A.5 v.5 ^3" }),
+		],
+		[
+			song({ name: "Minuet of Forest",      bpm: 130, score: "A1 ^2 <.5 >.5 <1 >3",             color: "green" }),
+			song({ name: "Bolero of Fire",        bpm: 150, score: "v.5 A.5 v.5 A.5 >.5 v.5 >.5 v2", color: "red" }),
+			song({ name: "Serenade of Water",     bpm: 110, score: "A1 v1 >2 >1 <3",                  color: "blue" }),
+			song({ name: "Requiem of Spirit",     bpm: 120, score: "A2 v1 A3 >2 v1 A3",               color: "orange" }),
+			song({ name: "Nocturne of Shadow",    bpm: 100, score: "<1 >1 >1 A2 <1 >1 v3",            color: "purple" }),
+			song({ name: "Prelude of Light",      bpm: 130, score: "^1 >.5 ^1 >.5 <.5 ^2.5",          color: "yellow" }),
+		],
+	],
+	"Majora's Mask": [
+		[
+			song({ name: "Song of Healing",       bpm: 100, score: "<1 >1 v2 <1 >1 v3",               color: "pink" }),
+			song({ name: "Song of Soaring",       bpm: 150, score: "v.5 <.5 ^1 v.5 <.5 ^2" }),
+			song({ name: "Inverted Song of Time", bpm: 100, score: "v1 A2 >1 v1 A2 >2" }),
+			song({ name: "Song of Double Time",   bpm: 140, score: ">.5 >1 A.5 A1 v.5 v1.5" }),
+		],
+		[
+			song({ name: "Sonata of Awakening",   bpm: 150, score: "^.5 <.5 ^.5 <.5 A1 >.5 A2",       color: "green" }),
+			song({ name: "Goron Lullaby",         bpm: 90,  score: "A1 >1 <2 A1 >1 <1 >1 A3",         color: "red" }),
+			song({ name: "New Wave Bossa Nova",   bpm: 120, score: "<1.5 ^.5 <1 >1.5 v.5 <1 >2",      color: "blue" }),
+			song({ name: "Elegy of Emptiness",    bpm: 90,  score: ">1 <.5 >.5 v2 >1 ^1 <3",          color: "orange" }),
+			song({ name: "Oath to Order",         bpm: 110, score: ">1 v1 A2 v1 >1 ^3" }),
+		],
+	],
+};
+
+// No song ends another one (see songs.test.ts), so matching the end of the
+// notes played is unambiguous and the order here doesn't matter
+export const songs: Song[] = GAMES.flatMap((game) => SHELVES[game].flat());

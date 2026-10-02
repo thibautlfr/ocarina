@@ -5,7 +5,13 @@ import type { Sequence } from "../audio/ocarina-sampler.ts";
 import { type ScheduledNote, schedule } from "../audio/schedule.ts";
 import Experience from "../experience.ts";
 import type { OcarinaButton } from "../ocarina-buttons.ts";
-import { noteDurations, type Song, songs } from "../songs/songs.ts";
+import {
+	GAMES,
+	type Game,
+	noteDurations,
+	SHELVES,
+	type Song,
+} from "../songs/songs.ts";
 import { listen } from "../utils/events.ts";
 import { closest, fragment, query, queryAll } from "./dom.ts";
 import Menu, {
@@ -19,46 +25,6 @@ import { pixelButton } from "./pixel-button.ts";
 import { songNoteIcon, trebleClefIcon } from "./pixel-icons.ts";
 import SongHint from "./song-hint.ts";
 import SongLearned from "./song-learned.ts";
-
-type Game = Song["game"];
-const GAMES: Game[] = ["Ocarina of Time", "Majora's Mask"];
-
-// The songs as the games' quest screens lay them out, shelf by shelf
-const SHELVES: Record<Game, string[][]> = {
-	"Ocarina of Time": [
-		[
-			"Zelda's Lullaby",
-			"Epona's Song",
-			"Saria's Song",
-			"Sun's Song",
-			"Song of Time",
-			"Song of Storms",
-		],
-		[
-			"Minuet of Forest",
-			"Bolero of Fire",
-			"Serenade of Water",
-			"Requiem of Spirit",
-			"Nocturne of Shadow",
-			"Prelude of Light",
-		],
-	],
-	"Majora's Mask": [
-		[
-			"Song of Healing",
-			"Song of Soaring",
-			"Inverted Song of Time",
-			"Song of Double Time",
-		],
-		[
-			"Sonata of Awakening",
-			"Goron Lullaby",
-			"New Wave Bossa Nova",
-			"Elegy of Emptiness",
-			"Oath to Order",
-		],
-	],
-};
 
 // Staff position of each button's pitch, in lines and spaces above the bottom
 // line (E4): A (D4) hangs under it, C▲ (D5) sits on the fourth line
@@ -75,16 +41,6 @@ const DEMO_DELAY = 0.08;
 const DEMO_CUT_FADE = 0.15;
 // Delay between the reveals of several new notes, in s
 const REVEAL_STAGGER = 0.12;
-
-const findSong = (name: string): Song => {
-	const song = songs.find((s) => s.name === name);
-	if (!song) throw new Error(`Song not found: ${name}`);
-	return song;
-};
-
-const BOOK = Object.fromEntries(
-	GAMES.map((game) => [game, SHELVES[game].map((row) => row.map(findSong))]),
-) as Record<Game, Song[][]>;
 
 const noteId = (shelf: number, note: number) => `song-note-${shelf}-${note}`;
 
@@ -253,7 +209,7 @@ export default class SongBook extends Menu {
 	}
 
 	private get book(): Song[][] {
-		return BOOK[this.game];
+		return SHELVES[this.game];
 	}
 
 	private get cursor(): Cursor {
@@ -271,7 +227,7 @@ export default class SongBook extends Menu {
 
 	private hasUnseen(game: Game) {
 		const { songProgress } = Experience.getInstance();
-		return BOOK[game].flat().some((song) => songProgress.isUnseen(song));
+		return SHELVES[game].flat().some((song) => songProgress.isUnseen(song));
 	}
 
 	private setGame(game: Game) {

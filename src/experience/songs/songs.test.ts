@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { OCARINA_BUTTONS } from "../ocarina-buttons.ts";
-import { noteDurations, songs } from "./songs.ts";
+import { noteDurations, song, songs } from "./songs.ts";
 
 const isSuffix = (
 	longer: readonly string[],
@@ -36,6 +36,31 @@ describe("songs", () => {
 				);
 			}
 		}
+	});
+});
+
+describe("song", () => {
+	it("parses a score into notes", () => {
+		const parsed = song({ name: "Test", bpm: 120, score: "A1 v.5 >2 <1.5 ^3" });
+		expect(parsed.notes).toEqual([
+			{ button: "A", beats: 1 },
+			{ button: "CDown", beats: 0.5 },
+			{ button: "CRight", beats: 2 },
+			{ button: "CLeft", beats: 1.5 },
+			{ button: "CUp", beats: 3 },
+		]);
+		expect(parsed.color).toBe("white");
+	});
+
+	it.each([
+		"x1",
+		"A",
+		"A0",
+		"Aa",
+		"A-1",
+		"A1  v1",
+	])('rejects the score "%s"', (score) => {
+		expect(() => song({ name: "Test", bpm: 120, score })).toThrow();
 	});
 });
 
