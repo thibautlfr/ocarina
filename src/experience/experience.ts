@@ -28,26 +28,26 @@ declare global {
 export default class Experience {
 	private static instance: Experience | null = null;
 
-	canvas: HTMLCanvasElement;
-	sizes: Sizes;
-	scene: THREE.Scene;
-	camera: Camera;
-	renderer: Renderer;
-	world: World;
-	settingsMenu: SettingsMenu;
-	songBook: SongBook;
-	aboutMenu: AboutMenu;
-	completion: Completion;
-	touchControls: TouchControls;
-	titleScreen: TitleScreen;
-	debug: Debug;
-	settings: Settings;
-	time: Time;
-	keyboard: Keyboard;
-	songDetector: SongDetector;
-	songProgress: SongProgress;
-	resources: Resources;
-	sampler: OcarinaSampler;
+	readonly canvas: HTMLCanvasElement;
+	readonly sizes: Sizes;
+	readonly scene: THREE.Scene;
+	readonly camera: Camera;
+	readonly renderer: Renderer;
+	readonly world: World;
+	readonly settingsMenu: SettingsMenu;
+	readonly songBook: SongBook;
+	readonly aboutMenu: AboutMenu;
+	readonly completion: Completion;
+	readonly touchControls: TouchControls;
+	readonly titleScreen: TitleScreen;
+	readonly debug: Debug;
+	readonly settings: Settings;
+	readonly time: Time;
+	readonly keyboard: Keyboard;
+	readonly songDetector: SongDetector;
+	readonly songProgress: SongProgress;
+	readonly resources: Resources;
+	readonly sampler: OcarinaSampler;
 
 	static getInstance(canvas?: HTMLCanvasElement): Experience {
 		if (Experience.instance) return Experience.instance;
