@@ -1,3 +1,0 @@
-# core-js (pulled in by posthog-js) only prints a funding banner on install
-allowBuilds:
-  core-js: false
