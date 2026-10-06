@@ -1,9 +1,10 @@
 # Assets
 
-This repo has the code, not the binaries. `public/models/` and `public/sounds/`
-are gitignored and **not included** here: the 3D models and sound samples are
-extracted or derived from Nintendo's *The Legend of Zelda: Ocarina of Time*, and
-aren't redistributable — crediting the source isn't a license.
+This repo has the code, not the binaries. `public/models/`, `public/sounds/`
+and `public/og-image.jpg` are gitignored and **not included** here: the 3D
+models, sound samples and link-preview screenshot are extracted or derived from
+Nintendo's *The Legend of Zelda: Ocarina of Time*, and aren't redistributable —
+crediting the source isn't a license.
 
 **There is currently no fallback experience without them.** Running `pnpm dev`
 or `pnpm build` without these files in place will fail (404s on the model/sound
@@ -18,6 +19,7 @@ fetches).
 | `public/models/navi_fairy.glb` | Navi (wings only) | [Sketchfab](https://sketchfab.com/), CC BY 4.0, modeled after Nintendo's design |
 | `public/sounds/ocarina/*.wav` | Ocarina note samples + the "song correct" jingle | extracted from the original game (fan archive) |
 | `public/sounds/ui/*.wav` | Menu open/close/select sounds | extracted from the original game (fan archive) |
+| `public/og-image.jpg` | Open Graph / Twitter link-preview image (1200×630), referenced from `index.html` | screenshot of the experience, from `images/og-image.jpg` in `ocarina-assets` |
 
 Models are Meshopt-compressed with WebP textures. If you're regenerating them
 from source, compress with `webp` then `meshopt`, never `gltf-transform

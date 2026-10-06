@@ -26,6 +26,7 @@ dist-ssr
 # Private, not redistributable — pulled from the ocarina-assets repo (see ASSETS.md)
 /public/models
 /public/sounds
+/public/og-image.jpg
 
 # Local cache used by scripts/assets.mjs when there's no sibling ocarina-assets checkout
 /.assets
