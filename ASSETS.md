@@ -21,8 +21,14 @@ fetches).
 
 Models are Meshopt-compressed with WebP textures. If you're regenerating them
 from source, compress with `webp` then `meshopt`, never `gltf-transform
-optimize` — it flattens and joins the nodes the code looks up by name (`stump`,
-`body`, `wing0`, `wing1`).
+optimize` — it flattens and joins the nodes the code relies on:
+
+- `links_house.glb`: `stump` (sizes the ocarina and its shadow) and
+  `ocarina_anchor`, an empty node on the stump top where the ocarina rests,
+  both looked up by name
+- `navi_fairy.glb`: `body`, looked up by name for its center and scale (the
+  node stays even though its sphere mesh was stripped), and each wing as its
+  own mesh — every mesh in the model is taken as a wing and flaps separately
 
 ## Pulling them in
 
