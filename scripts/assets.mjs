@@ -1,8 +1,8 @@
-// Pulls the binary assets (3D models, ocarina/UI sounds) from the private
-// `ocarina-assets` repo into public/. Those files are extracted or derived
-// from Nintendo's Ocarina of Time and aren't redistributable — they live
-// outside this repo (see ASSETS.md), gitignored under public/models and
-// public/sounds.
+// Pulls the binary assets (3D models, ocarina/UI sounds, the Open Graph
+// image) from the private `ocarina-assets` repo into public/. Those files are
+// extracted or derived from Nintendo's Ocarina of Time and aren't
+// redistributable — they live outside this repo (see ASSETS.md), gitignored
+// under public/.
 //
 // Usage: `pnpm assets`
 //
@@ -28,9 +28,11 @@ const DEFAULT_SIBLING = join(ROOT, "..", "ocarina-assets");
 const CLONE_CACHE = join(ROOT, ".assets");
 const DEFAULT_REPO = "git@github.com:thibautlfr/ocarina-assets.git";
 
-// Files this project actually needs from the assets repo (models + sounds
-// only — og-image.jpg/preview.jpg are committed directly in this repo).
+// Files this project actually needs from the assets repo, copied to the same
+// path under public/ unless DESTINATIONS says otherwise. images/preview.jpg
+// (the README screenshot) isn't pulled: nothing in the site uses it.
 const FILES = [
+	"images/og-image.jpg",
 	"models/links_house.glb",
 	"models/navi_fairy.glb",
 	"models/ocarina_of_time.glb",
@@ -44,6 +46,12 @@ const FILES = [
 	"sounds/ui/menu-open.wav",
 	"sounds/ui/menu-select.wav",
 ];
+
+// Files served somewhere other than their path in the assets repo, relative
+// to public/. og-image.jpg is referenced from index.html at the site root.
+const DESTINATIONS = {
+	"images/og-image.jpg": "og-image.jpg",
+};
 
 function fail(message) {
 	console.error(`\n✖ ${message}\n`);
@@ -115,7 +123,7 @@ function main() {
 			);
 		}
 
-		const destPath = join(ROOT, "public", file);
+		const destPath = join(ROOT, "public", DESTINATIONS[file] ?? file);
 		mkdirSync(dirname(destPath), { recursive: true });
 		copyFileSync(srcPath, destPath);
 		copied++;
