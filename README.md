@@ -40,6 +40,9 @@ src/
   styles/
 ```
 
+The fairies' flight is built on [steerkit](https://github.com/thibautlfr/steerkit),
+a small library of Reynolds steering behaviors.
+
 See `ASSETS.md` for why `public/models/` and `public/sounds/` aren't in this
 repo, and how to pull them in if you have access.
 
