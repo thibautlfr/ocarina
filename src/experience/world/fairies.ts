@@ -1,3 +1,4 @@
+import { add, arrive, brake, keepAway, step, zero } from "steerkit";
 import * as THREE from "three";
 import type { GLTF } from "three/addons";
 import Experience from "../experience.ts";
@@ -27,14 +28,22 @@ const STUMP_CLEARANCE = 1.6;
 // Fairies steer away from the ocarina and the camera within these radii
 const OCARINA_AVOID_RADIUS = 1.1;
 const CAMERA_AVOID_RADIUS = 1;
-const REPEL_STRENGTH = 12;
+const OCARINA_AVOID = { radius: OCARINA_AVOID_RADIUS };
+const CAMERA_AVOID = { radius: CAMERA_AVOID_RADIUS };
 
 // A target this close counts as reached
 const ARRIVE_DISTANCE = 0.3;
 // Fairies start slowing down this far from their target
 const SLOW_DOWN_DISTANCE = 1.2;
-const STEER_STRENGTH = 1.5;
-const HOVER_BRAKE = 2;
+// Weights of the steering forces once summed. The sum is bounded by the
+// maxForce param, so keep-away only wins over arrive by being weighted up.
+const ARRIVE_WEIGHT = 1.5;
+const BRAKE_WEIGHT = 2;
+const KEEP_AWAY_WEIGHT = 10;
+// Seconds for the extra speed of the celebration to fade out once it ends
+const OVERSPEED_DAMPING = 0.6;
+const ARRIVE_OPTIONS = { slowingDistance: SLOW_DOWN_DISTANCE };
+const STEP_OPTIONS = { overspeedDamping: OVERSPEED_DAMPING };
 // Chance of hovering a moment on reaching a target, and for how long, in seconds
 const HOVER_CHANCE = 0.35;
 const HOVER_TIME = [0.8, 2.5] as const;
@@ -81,6 +90,7 @@ const CELEBRATE_GLOW = 2.4;
 // Speed multiplier, so a fairy at the far wall reaches the ring in time
 const CELEBRATE_SPEED = 2.2;
 
+// A steerkit agent: maxSpeed and maxForce are set every frame
 type Fairy = {
 	// Its place in the ring of the celebration
 	index: number;
@@ -92,6 +102,8 @@ type Fairy = {
 	light: THREE.PointLight;
 	position: THREE.Vector3;
 	velocity: THREE.Vector3;
+	maxSpeed: number;
+	maxForce: number;
 	target: THREE.Vector3;
 	// Seconds before a new target is picked
 	retargetIn: number;
@@ -116,6 +128,7 @@ export default class Fairies {
 
 	private readonly params = {
 		speed: 1.1,
+		maxForce: 6,
 		wobble: 0.04,
 		flapSpeed: 28,
 		glow: 18,
@@ -128,7 +141,7 @@ export default class Fairies {
 
 	// Reused every frame
 	private readonly steering = new THREE.Vector3();
-	private readonly away = new THREE.Vector3();
+	private readonly behavior = new THREE.Vector3();
 	private readonly lookTarget = new THREE.Vector3();
 	private readonly heading = new THREE.Quaternion();
 	private readonly lookMatrix = new THREE.Matrix4();
@@ -151,6 +164,7 @@ export default class Fairies {
 
 		debug.addControls("Fairies", this.params, {
 			speed: [0, 4, 0.01],
+			maxForce: [0, 20, 0.01, "max force"],
 			wobble: [0, 0.2, 0.001],
 			flapSpeed: [0, 60, 0.1, "flap speed"],
 			glow: [0, 30, 0.1],
@@ -204,6 +218,8 @@ export default class Fairies {
 			light,
 			position,
 			velocity: new THREE.Vector3(),
+			maxSpeed: 0,
+			maxForce: 0,
 			target: this.randomTarget(new THREE.Vector3()),
 			retargetIn: randFloat(...FIRST_RETARGET_TIME),
 			hoverFor: 0,
@@ -280,15 +296,6 @@ export default class Fairies {
 		return out;
 	}
 
-	// Pushes `fairy` out of a sphere around `center`, harder the deeper it is
-	private repel(fairy: Fairy, center: THREE.Vector3, radius: number) {
-		this.away.subVectors(fairy.position, center);
-		const distance = this.away.length();
-		if (distance >= radius || distance === 0) return;
-		const strength = (1 - distance / radius) * REPEL_STRENGTH;
-		this.steering.addScaledVector(this.away.divideScalar(distance), strength);
-	}
-
 	// How far along the celebration is, from 0 to 1, or null when there's none
 	private get celebrationProgress(): number | null {
 		return this.celebrationTime === null
@@ -314,8 +321,10 @@ export default class Fairies {
 	) {
 		const progress = this.celebrationProgress;
 		const celebrating = progress !== null;
-		const maxSpeed =
-			this.params.speed * fairy.speed * (celebrating ? CELEBRATE_SPEED : 1);
+		const boost = celebrating ? CELEBRATE_SPEED : 1;
+		fairy.maxSpeed = this.params.speed * fairy.speed * boost;
+		// As agile as it is fast, so it keeps up with the ring
+		fairy.maxForce = this.params.maxForce * boost;
 
 		if (celebrating) {
 			// The ring moves on: the arrive steering chases it
@@ -324,10 +333,10 @@ export default class Fairies {
 		} else {
 			this.wander(fairy, dt);
 		}
-		this.fly(fairy, dt, maxSpeed, camera, celebrating);
+		this.fly(fairy, dt, camera, celebrating);
 		this.place(fairy, t);
 		this.orient(fairy, dt);
-		this.animate(fairy, t, maxSpeed, progress);
+		this.animate(fairy, t, fairy.maxSpeed, progress);
 	}
 
 	// A new target once this one is reached or taking too long, unless hovering
@@ -348,33 +357,40 @@ export default class Fairies {
 			Math.random() < HOVER_CHANCE ? randFloat(...HOVER_TIME) : 0;
 	}
 
-	// Arrive: full speed far away, slowing down near the target; stop to hover.
-	// Steers clear of the camera, and of the ocarina unless celebrating.
+	// Arrive: full speed far away, slowing down near the target; brake to hover.
+	// Keeps away from the camera, and from the ocarina unless celebrating.
 	private fly(
 		fairy: Fairy,
 		dt: number,
-		maxSpeed: number,
 		camera: THREE.Vector3,
 		celebrating: boolean,
 	) {
+		const { steering, behavior } = this;
+		zero(steering);
 		if (fairy.hoverFor > 0) {
-			this.steering.copy(fairy.velocity).multiplyScalar(-HOVER_BRAKE);
+			add(steering, brake(fairy, behavior), BRAKE_WEIGHT);
 		} else {
-			const distance = fairy.position.distanceTo(fairy.target);
-			this.steering
-				.subVectors(fairy.target, fairy.position)
-				.setLength(maxSpeed * Math.min(1, distance / SLOW_DOWN_DISTANCE))
-				.sub(fairy.velocity)
-				.multiplyScalar(STEER_STRENGTH);
+			add(
+				steering,
+				arrive(fairy, fairy.target, ARRIVE_OPTIONS, behavior),
+				ARRIVE_WEIGHT,
+			);
 		}
 		// The celebration ring is inside the avoid radius
 		if (!celebrating) {
-			this.repel(fairy, this.avoidOcarina, OCARINA_AVOID_RADIUS);
+			add(
+				steering,
+				keepAway(fairy, this.avoidOcarina, OCARINA_AVOID, behavior),
+				KEEP_AWAY_WEIGHT,
+			);
 		}
-		this.repel(fairy, camera, CAMERA_AVOID_RADIUS);
+		add(
+			steering,
+			keepAway(fairy, camera, CAMERA_AVOID, behavior),
+			KEEP_AWAY_WEIGHT,
+		);
 
-		fairy.velocity.addScaledVector(this.steering, dt);
-		fairy.position.addScaledVector(fairy.velocity, dt);
+		step(fairy, steering, dt, STEP_OPTIONS);
 		// The ring hangs lower than the flight area allows
 		if (!celebrating) fairy.position.clamp(BOUNDS.min, BOUNDS.max);
 	}
