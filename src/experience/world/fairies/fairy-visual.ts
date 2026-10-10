@@ -1,3 +1,4 @@
+import { faceVelocity } from "steerkit/three";
 import * as THREE from "three";
 import type { GLTF } from "three/addons";
 import { createHaloTexture } from "./halo-texture.ts";
@@ -9,7 +10,9 @@ const CORE_WHITENESS = 0.6;
 const WING_WHITENESS = 0.4;
 const WING_OPACITY = 0.45;
 const LIGHT_DISTANCE = 3;
-const TURN_SPEED = 5;
+// How fast a fairy turns toward where it flies, and the speed below which
+// it keeps its heading, when hovering
+const TURN = { turnRate: 5, minSpeed: 0.1 };
 // Wing angle around the body, in radians: `range` either side of `rest`
 // when hovering, `effort` more at full speed
 const FLAP = { rest: 0.35, range: 0.3, effort: 0.15 };
@@ -58,11 +61,6 @@ export class FairyParts {
 		this.halo.dispose();
 	}
 }
-
-// Reused every frame
-const lookTarget = new THREE.Vector3();
-const lookMatrix = new THREE.Matrix4();
-const heading = new THREE.Quaternion();
 
 // A glowing ball with flapping wings, a halo, and a light that tints the
 // ocarina when passing close (the house itself is unlit)
@@ -144,7 +142,7 @@ export default class FairyVisual {
 			.multiplyScalar(params.wobble)
 			.add(position);
 
-		this.turnToward(velocity, dt);
+		faceVelocity(this.body, velocity, dt, TURN);
 
 		const effort = Math.min(1, velocity.length() / maxSpeed || 0);
 		const flap =
@@ -160,14 +158,5 @@ export default class FairyVisual {
 		this.group.removeFromParent();
 		this.light.dispose();
 		for (const material of this.materials) material.dispose();
-	}
-
-	// Smoothly, keeping the last heading when hovering
-	private turnToward(velocity: THREE.Vector3, dt: number) {
-		if (velocity.lengthSq() <= 0.01) return;
-		const { position, up } = this.group;
-		lookTarget.copy(position).add(velocity);
-		heading.setFromRotationMatrix(lookMatrix.lookAt(lookTarget, position, up));
-		this.body.quaternion.slerp(heading, 1 - Math.exp(-TURN_SPEED * dt));
 	}
 }

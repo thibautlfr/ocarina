@@ -1,4 +1,5 @@
 import { add, arrive, brake, keepAway, step, type Vec3, zero } from "steerkit";
+import type { SteeringHelper } from "steerkit/three";
 import * as THREE from "three";
 import type Celebration from "./celebration.ts";
 import FairyVisual, {
@@ -38,7 +39,6 @@ const STEP = { overspeedDamping: 0.6 };
 export type FairyParams = LookParams & { speed: number; maxForce: number };
 
 // Reused every frame
-const force = new THREE.Vector3();
 const behavior = new THREE.Vector3();
 
 // A steerkit agent wandering between random targets, clear of the ocarina
@@ -48,6 +48,8 @@ export default class Fairy {
 	readonly velocity = new THREE.Vector3();
 	maxSpeed = 0;
 	maxForce = 0;
+	// The steering force of the last frame, before maxForce bounds it
+	readonly force = new THREE.Vector3();
 
 	private readonly target: THREE.Vector3;
 	private retargetIn = randFloat(...WANDER.firstRetargetTime);
@@ -106,6 +108,7 @@ export default class Fairy {
 		// As agile as it is fast, so it keeps up with the ring
 		this.maxForce = this.params.maxForce * speedBoost;
 
+		const { force } = this;
 		zero(force);
 		if (this.hoverFor > 0) {
 			add(force, brake(this, behavior), BRAKE.weight);
@@ -127,6 +130,11 @@ export default class Fairy {
 		step(this, force, dt, STEP);
 
 		if (!celebrating) this.position.clamp(FLIGHT_AREA.min, FLIGHT_AREA.max);
+	}
+
+	// Its velocity, desired velocity and steering force, in debug mode
+	drawForces(helper: SteeringHelper) {
+		helper.vectors(this, this.force);
 	}
 
 	animate(t: number, dt: number, flare: number) {
@@ -151,4 +159,14 @@ export default class Fairy {
 		);
 		return out;
 	}
+}
+
+// Where the fairies fly and what they keep away from, in debug mode
+export function drawZones(
+	helper: SteeringHelper,
+	ocarina: Vec3,
+	celebrating: boolean,
+) {
+	helper.box(FLIGHT_AREA);
+	if (!celebrating) helper.sphere(ocarina, AVOID_OCARINA.radius);
 }
