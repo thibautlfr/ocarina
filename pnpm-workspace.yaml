@@ -1,0 +1,4 @@
+# steerkit is the author's own library, published through a staged release
+# approved with 2FA: its new versions skip pnpm's 24-hour minimumReleaseAge
+minimumReleaseAgeExclude:
+  - steerkit
