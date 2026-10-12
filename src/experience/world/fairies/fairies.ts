@@ -1,8 +1,9 @@
+import { SteeringHelper } from "steerkit/three";
 import * as THREE from "three";
 import type { GLTF } from "three/addons";
 import Experience from "../../experience.ts";
 import Celebration from "./celebration.ts";
-import Fairy, { type FairyParams } from "./fairy.ts";
+import Fairy, { drawZones, type FairyParams } from "./fairy.ts";
 import { FairyParts } from "./fairy-visual.ts";
 
 // One fairy each: Navi, Tatl, Tael and a Great Fairy pink
@@ -25,11 +26,15 @@ export default class Fairies {
 	private readonly fairies: Fairy[];
 	private readonly celebration: Celebration;
 	private readonly ringPoint = new THREE.Vector3();
+	private readonly ocarina: THREE.Vector3;
+	// The steering forces and zones drawn over the scene, in debug mode only
+	private readonly helper: SteeringHelper | null = null;
 
 	// `ocarinaCenter` is kept clear, so the fairies circle around it
 	constructor(ocarinaCenter: THREE.Vector3) {
 		const { resources, scene, debug } = Experience.getInstance();
 		const ocarina = ocarinaCenter.clone();
+		this.ocarina = ocarina;
 
 		this.parts = new FairyParts(resources.get<GLTF>("naviFairy"));
 		this.celebration = new Celebration(ocarina);
@@ -38,7 +43,7 @@ export default class Fairies {
 		);
 		for (const fairy of this.fairies) scene.add(fairy.object);
 
-		debug.addControls("Fairies", this.params, {
+		const folder = debug.addControls("Fairies", this.params, {
 			speed: [0, 4, 0.01],
 			maxForce: [0, 20, 0.01, "max force"],
 			wobble: [0, 0.2, 0.001],
@@ -46,6 +51,15 @@ export default class Fairies {
 			glow: [0, 30, 0.1],
 			light: [0, 10, 0.01],
 		});
+		if (folder) {
+			const helper = new SteeringHelper();
+			// Seen through the house and the stump
+			helper.material.depthTest = false;
+			helper.visible = false;
+			scene.add(helper);
+			folder.add(helper, "visible").name("forces");
+			this.helper = helper;
+		}
 	}
 
 	celebrate() {
@@ -72,10 +86,21 @@ export default class Fairies {
 			fairy.fly(dt, camera.instance.position, celebration);
 			fairy.animate(t, dt, celebration.flare);
 		});
+		this.drawForces();
+	}
+
+	private drawForces() {
+		const { helper } = this;
+		if (!helper?.visible) return;
+		helper.reset();
+		drawZones(helper, this.ocarina, this.celebration.active);
+		for (const fairy of this.fairies) fairy.drawForces(helper);
 	}
 
 	destroy() {
 		for (const fairy of this.fairies) fairy.dispose();
+		this.helper?.removeFromParent();
+		this.helper?.dispose();
 		this.parts.dispose();
 	}
 }

@@ -15,8 +15,8 @@ importers:
         specifier: ^3.0.1
         version: 3.0.1
       steerkit:
-        specifier: ^0.1.0
-        version: 0.1.0
+        specifier: ^0.4.0
+        version: 0.4.0(three@0.184.0)
       three:
         specifier: ^0.184.0
         version: 0.184.0
@@ -447,8 +447,13 @@ packages:
   std-env@4.3.0:
     resolution: {integrity: sha512-OtU/EgQ1kIm5KwqQpBC6ZEMXrZRui11w8zgfTWp8cdO9B8OaPsbA8bTHO2P+HNo1VlUTGMVBwPhydu6poeXiag==}
 
-  steerkit@0.1.0:
-    resolution: {integrity: sha512-olMG2zYtEpbKvtsq0SmKBd1+X7Ri3SPLINqg9JBndMH7dWcVpXGoSTHltQanEg7bCvQqSigSQ65Mu1yRmeEIPQ==}
+  steerkit@0.4.0:
+    resolution: {integrity: sha512-ratAraafNpSOMZcGt2S9o2NRVhmvHcPTAYj8s4dHuA9mQyjRI7JDlqs5qoxIy3qfoP/5LGaH0gcWJPPv1CxbYA==}
+    peerDependencies:
+      three: '>=0.152.0'
+    peerDependenciesMeta:
+      three:
+        optional: true
 
   three@0.184.0:
     resolution: {integrity: sha512-wtTRjG92pM5eUg/KuUnHsqSAlPM296brTOcLgMRqEeylYTh/CdtvKUvCyyCQTzFuStieWxvZb8mVTMvdPyUpxg==}
@@ -866,7 +871,9 @@ snapshots:
 
   std-env@4.3.0: {}
 
-  steerkit@0.1.0: {}
+  steerkit@0.4.0(three@0.184.0):
+    optionalDependencies:
+      three: 0.184.0
 
   three@0.184.0: {}
 
